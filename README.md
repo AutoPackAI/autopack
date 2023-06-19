@@ -1,85 +1,86 @@
+# AutoPack Tools
 
-# Python Project Template
+[AutoPack](https://autopack.ai) is a repository for tools that are specifically designed for AI Agents.
 
-A low dependency and really simple to start project template for Python Projects.
+The `autopack-tools` Python package is designed to facilitate the installation and usage of tools hosted in the AutoPack
+repository. Tools in AutoPack are called Packs.
 
-See also 
-- [Flask-Project-Template](https://github.com/rochacbruno/flask-project-template/) for a full feature Flask project including database, API, admin interface, etc.
-- [FastAPI-Project-Template](https://github.com/rochacbruno/fastapi-project-template/) The base to start an openapi project featuring: SQLModel, Typer, FastAPI, JWT Token Auth, Interactive Shell, Management Commands.
+## Note
 
-### HOW TO USE THIS TEMPLATE
+This is still in the alpha stage. It's roughly at MVP level, and things will not work, features aren't complete, and
+things will change. Be forewarned.
 
-> **DO NOT FORK** this is meant to be used from **[Use this template](https://github.com/rochacbruno/python-project-template/generate)** feature.
+## Installation
 
-1. Click on **[Use this template](https://github.com/rochacbruno/python-project-template/generate)**
-3. Give a name to your project  
-   (e.g. `my_awesome_project` recommendation is to use all lowercase and underscores separation for repo names.)
-3. Wait until the first run of CI finishes  
-   (Github Actions will process the template and commit to your new repo)
-4. If you want [codecov](https://about.codecov.io/sign-up/) Reports and Automatic Release to [PyPI](https://pypi.org)  
-  On the new repository `settings->secrets` add your `PYPI_API_TOKEN` and `CODECOV_TOKEN` (get the tokens on respective websites)
-4. Read the file [CONTRIBUTING.md](CONTRIBUTING.md)
-5. Then clone your new project and happy coding!
-
-> **NOTE**: **WAIT** until first CI run on github actions before cloning your new project.
-
-### What is included on this template?
-
-- 🖼️ Templates for starting multiple application types:
-  * **Basic low dependency** Python program (default) [use this template](https://github.com/rochacbruno/python-project-template/generate)
-  * **Flask** with database, admin interface, restapi and authentication [use this template](https://github.com/rochacbruno/flask-project-template/generate).
-  **or Run `make init` after cloning to generate a new project based on a template.**
-- 📦 A basic [setup.py](setup.py) file to provide installation, packaging and distribution for your project.  
-  Template uses setuptools because it's the de-facto standard for Python packages, you can run `make switch-to-poetry` later if you want.
-- 🤖 A [Makefile](Makefile) with the most useful commands to install, test, lint, format and release your project.
-- 📃 Documentation structure using [mkdocs](http://www.mkdocs.org)
-- 💬 Auto generation of change log using **gitchangelog** to keep a HISTORY.md file automatically based on your commit history on every release.
-- 🐋 A simple [Containerfile](Containerfile) to build a container image for your project.  
-  `Containerfile` is a more open standard for building container images than Dockerfile, you can use buildah or docker with this file.
-- 🧪 Testing structure using [pytest](https://docs.pytest.org/en/latest/)
-- ✅ Code linting using [flake8](https://flake8.pycqa.org/en/latest/)
-- 📊 Code coverage reports using [codecov](https://about.codecov.io/sign-up/)
-- 🛳️ Automatic release to [PyPI](https://pypi.org) using [twine](https://twine.readthedocs.io/en/latest/) and github actions.
-- 🎯 Entry points to execute your program using `python -m <project_name>` or `$ project_name` with basic CLI argument parsing.
-- 🔄 Continuous integration using [Github Actions](.github/workflows/) with jobs to lint, test and release your project on Linux, Mac and Windows environments.
-
-> Curious about architectural decisions on this template? read [ABOUT_THIS_TEMPLATE.md](ABOUT_THIS_TEMPLATE.md)  
-> If you want to contribute to this template please open an [issue](https://github.com/rochacbruno/python-project-template/issues) or fork and send a PULL REQUEST.
-
-[❤️ Sponsor this project](https://github.com/sponsors/rochacbruno/)
-
-<!--  DELETE THE LINES ABOVE THIS AND WRITE YOUR PROJECT README BELOW -->
-
----
-# project_name
-
-[![codecov](https://codecov.io/gh/author_name/project_urlname/branch/main/graph/badge.svg?token=project_urlname_token_here)](https://codecov.io/gh/author_name/project_urlname)
-[![CI](https://github.com/author_name/project_urlname/actions/workflows/main.yml/badge.svg)](https://github.com/author_name/project_urlname/actions/workflows/main.yml)
-
-project_description
-
-## Install it from PyPI
+Install the `autopack-tools` package from PyPI using pip:
 
 ```bash
-pip install project_name
+pip install autopack-tools
+```
+
+Or Poetry:
+
+```bash
+poetry add autopack-tools
 ```
 
 ## Usage
 
-```py
-from project_name import BaseClass
-from project_name import base_function
+### Pack IDs
 
-BaseClass().base_method()
-base_function()
-```
+Each pack in the AutoPack repository is identified by a fully qualified path based on its GitHub repository. This format
+ensures uniqueness, prevents namespace collisions, and allows for easy identification of the source code location.
+Importantly, it enables us to uniquely refer to a pack while keeping pack names intuitive and understandable for an LLM.
+
+For example, the ID of a pack named `web_search` hosted in the GitHub repository `erik-megarad/my_packs` would be:
+
+`erik-megarad/my_packs/web_search`
+
+This format allows us to use the pack's name, `web_search`, within an Agent, making it convenient and straightforward
+to reference the desired tool.
+
+### Manual Tool Installation
+
+You can manually install a pack using the following command:
 
 ```bash
-$ python -m project_name
-#or
-$ project_name
+autopack install author/repo_name/tool_name
 ```
+
+### Using with LangChain
+
+To use a tool with LangChain, you can retrieve it using the `get_pack` function from the `autopack` module:
+
+```python
+from autopack import get_pack
+
+tool = get_pack("author/repo_name/pack_name")
+
+# Add the tool to the 'packs' argument when instantiating your AgentExecutor
+agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=[tool()])
+```
+
+### Using with Auto-GPT
+
+We are actively working on improving the integration with Auto-GPT. Stay tuned for updates!
+
+To use `autopack` with Auto-GPT, you can edit the file `autogpt/main.py` and add `autopack` to the `COMMAND_CATEGORIES`
+list.
+
+## TODOs
+
+This project is still in its early stages, and there are several features and enhancements that need to be implemented.
+If you are interested and willing to contribute, the following list provides a good starting point:
+
+- Tool search functionality within the CLI
+- Tool search capability from Python
+- Optional automatic pack installation in the `get_pack` function
+- Tools for Agents to independently search for, install, and utilize other Tools
+- Tool for utilizing the pack selection API of the AutoPack repository
+- Optional contribution of feedback back to the AutoPack repository
 
 ## Development
 
-Read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+For information on how to contribute to AutoPack, please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
+Feel free to modify this README to provide more specific details about your project and its functionalities.

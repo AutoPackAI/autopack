@@ -1,3 +1,8 @@
+.idea/
+scripts/
+tmp/
+.orbital/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
