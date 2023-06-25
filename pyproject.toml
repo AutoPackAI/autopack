@@ -1,6 +1,8 @@
 [tool.poetry]
 name = "autopack-tools"
-version = "0.1.2"
+version = "0.1.3"
+repository = "https://github.com/AutoPackAI/autopack"
+homepage = "https://autopack.ai"
 description = "Package Manager for AI Agent tools"
 authors = ["Erik Peterson <e@eriklp.com>"]
 license = "MIT"
