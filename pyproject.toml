@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autopack-tools"
-version = "0.1.4"
+version = "0.1.5"
 repository = "https://github.com/AutoPackAI/autopack"
 homepage = "https://autopack.ai"
 description = "Package Manager for AI Agent tools"
@@ -13,7 +13,7 @@ packages = [{ include = "autopack" }]
 autopack = 'autopack.cli:main'
 
 [tool.poetry.dependencies]
-python = ">=3.10.3"
+python = "^3.10.3"
 requests = "^2.31.0"
 dataclasses-json = "^0.5.8"
 urllib3 = "^1.26.16"
