@@ -4,9 +4,9 @@ import subprocess
 
 from git import Repo
 
-from autopack.api import PackResponse, get_pack_data
+from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError
-from autopack.get_pack import get_pack, try_get_pack
+from autopack.get_pack import try_get_pack
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -38,9 +38,7 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
         if force:
             install_dependency(dependency)
         else:
-            print(
-                f"This pack requires the dependency {dependency} to be installed. Continue?"
-            )
+            print(f"This pack requires the dependency {dependency} to be installed. Continue?")
             agree = input("[Yn]")
             if agree.lower() == "y" or agree == "":
                 install_dependency(dependency)
@@ -62,17 +60,20 @@ def install_from_git(pack_data: PackResponse):
         Repo.clone_from(url, pack_path)
 
 
-def install_pack(pack_id, force_dependencies=False):
+def install_pack(pack_id: str, force_dependencies=False):
     print(f"Installing pack: {pack_id}")
+    os.makedirs(".autopack", exist_ok=True)
 
-    pack = try_get_pack(pack_id)
+    pack = try_get_pack(pack_id, quiet=True)
     if pack:
         print(f"Pack {pack_id} already installed.")
         return True
 
     try:
-        pack_data = get_pack_data(pack_id)
+        pack_data = get_pack_details(pack_id)
 
+        if not pack_data:
+            return False
         ask_to_install_dependencies(pack_data.dependencies, force_dependencies)
     except AutoPackError as e:
         # Maybe do something else
@@ -85,9 +86,9 @@ def install_pack(pack_id, force_dependencies=False):
     if pack_data.source == "git":
         install_from_git(pack_data)
 
-    pack = get_pack(pack_id)
+    pack = try_get_pack(pack_id, quiet=True)
     if pack:
         return True
 
-    print("Installation completed but pack could still not be found.")
+    print("Error: Installation completed but pack could still not be found.")
     return False

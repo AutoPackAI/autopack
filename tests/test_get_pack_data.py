@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from autopack.api import API_URL, get_pack_data
+from autopack.api import API_URL, get_pack_details
 from autopack.errors import AutoPackFetchError
 
 
@@ -32,10 +32,10 @@ def test_fetch_pack_data_success(mock_requests_get, valid_pack_data):
     mock_response.json.return_value = valid_pack_data
     mock_requests_get.return_value = mock_response
 
-    response = get_pack_data("pack_id")
+    response = get_pack_details("pack_id")
 
     mock_requests_get.assert_called_once_with(
-        f"{API_URL}/packs/get", params={"id": "pack_id"}
+        f"{API_URL}api/details", params={"id": "pack_id"}
     )
 
     assert response.pack_id == valid_pack_data["pack_id"]
@@ -56,10 +56,10 @@ def test_fetch_pack_data_invalid_response(mock_requests_get, valid_pack_data):
     mock_requests_get.return_value = mock_response
 
     with pytest.raises(AutoPackFetchError):
-        get_pack_data("pack_id")
+        get_pack_details("pack_id")
 
     mock_requests_get.assert_called_once_with(
-        f"{API_URL}/packs/get", params={"id": "pack_id"}
+        f"{API_URL}api/details", params={"id": "pack_id"}
     )
 
 
@@ -69,10 +69,10 @@ def test_fetch_pack_data_error_response(mock_requests_get, valid_pack_data):
     mock_requests_get.return_value = mock_response
 
     with pytest.raises(AutoPackFetchError):
-        get_pack_data("pack_id")
+        get_pack_details("pack_id")
 
     mock_requests_get.assert_called_once_with(
-        f"{API_URL}/packs/get", params={"id": "pack_id"}
+        f"{API_URL}api/details", params={"id": "pack_id"}
     )
 
 
@@ -81,8 +81,8 @@ def test_fetch_pack_data_not_found_response(mock_requests_get, valid_pack_data):
     mock_response.status_code = 404
     mock_requests_get.return_value = mock_response
 
-    assert get_pack_data("pack_id") is None
+    assert get_pack_details("pack_id") is None
 
     mock_requests_get.assert_called_once_with(
-        f"{API_URL}/packs/get", params={"id": "pack_id"}
+        f"{API_URL}api/details", params={"id": "pack_id"}
     )

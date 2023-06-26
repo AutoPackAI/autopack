@@ -41,66 +41,66 @@ def pack_response_invalid_class(pack_response_valid):
     return pack_response_valid
 
 
-@patch("autopack.get_pack.get_pack_data")
-def test_get_pack_success(mock_get_pack_data, pack_response_valid):
+@patch("autopack.get_pack.get_pack_details")
+def test_get_pack_success(mock_get_pack_details, pack_response_valid):
     pack_id = pack_response_valid.pack_id
-    mock_get_pack_data.return_value = pack_response_valid
+    mock_get_pack_details.return_value = pack_response_valid
 
     result = get_pack(pack_id)
 
     assert result == NoopPack
-    mock_get_pack_data.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id)
 
 
-@patch("autopack.get_pack.get_pack_data")
-def test_get_pack_not_found(mock_get_pack_data):
+@patch("autopack.get_pack.get_pack_details")
+def test_get_pack_not_found(mock_get_pack_details):
     pack_id = "some_author/my_packs/NoopPack"
-    mock_get_pack_data.return_value = None
+    mock_get_pack_details.return_value = None
 
     with pytest.raises(AutoPackNotFoundError):
         get_pack(pack_id)
 
-    mock_get_pack_data.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id)
 
 
-@patch("autopack.get_pack.get_pack_data")
-def test_get_pack_module_not_found(mock_get_pack_data, pack_response_invalid_path):
+@patch("autopack.get_pack.get_pack_details")
+def test_get_pack_module_not_found(mock_get_pack_details, pack_response_invalid_path):
     pack_id = pack_response_invalid_path.pack_id
-    mock_get_pack_data.return_value = pack_response_invalid_path
+    mock_get_pack_details.return_value = pack_response_invalid_path
 
     with pytest.raises(AutoPackNotInstalledError):
         get_pack(pack_id)
 
-    mock_get_pack_data.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id)
 
 
-@patch("autopack.get_pack.get_pack_data")
-def test_get_pack_invalid_class(mock_get_pack_data, pack_response_invalid_class):
+@patch("autopack.get_pack.get_pack_details")
+def test_get_pack_invalid_class(mock_get_pack_details, pack_response_invalid_class):
     pack_id = pack_response_invalid_class.pack_id
-    mock_get_pack_data.return_value = pack_response_invalid_class
+    mock_get_pack_details.return_value = pack_response_invalid_class
 
     with pytest.raises(AutoPackNotFoundError):
         get_pack(pack_id)
 
-    mock_get_pack_data.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id)
 
 
-@patch("autopack.get_pack.get_pack_data")
-def test_try_get_pack_success(mock_get_pack_data, pack_response_valid):
+@patch("autopack.get_pack.get_pack_details")
+def test_try_get_pack_success(mock_get_pack_details, pack_response_valid):
     pack_id = pack_response_valid.pack_id
-    mock_get_pack_data.return_value = pack_response_valid
+    mock_get_pack_details.return_value = pack_response_valid
 
     result = try_get_pack(pack_id)
 
     assert result == NoopPack
-    mock_get_pack_data.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id)
 
 
-@patch("autopack.get_pack.get_pack_data")
-def test_try_get_pack_not_found(mock_get_pack_data):
+@patch("autopack.get_pack.get_pack_details")
+def test_try_get_pack_not_found(mock_get_pack_details):
     pack_id = "some_author/my_packs/NoopPack"
-    mock_get_pack_data.return_value = None
+    mock_get_pack_details.return_value = None
 
     assert try_get_pack(pack_id) is None
 
-    mock_get_pack_data.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id)
