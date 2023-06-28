@@ -23,6 +23,7 @@ def valid_pack_data():
         "dependencies": ["langchain", "requests"],
         "source": "git",
         "args": {"query": "python", "limit": 10},
+        "init_args": {"api_key": {"type": "string", "description": "The API key to nowhere"}},
     }
 
 

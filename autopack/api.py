@@ -15,6 +15,8 @@ API_URL = os.environ.get("API_URL", "https://autopack.ai/")
 @dataclass_json
 @dataclass
 class PackResponse:
+    """Class to map Pack properties from the API. Internal use only."""
+
     pack_id: str
     author: str
     repo: str
@@ -24,6 +26,7 @@ class PackResponse:
     dependencies: list[str]
     source: str
     args: dict[str, Any]
+    init_args: dict[str, Any]
 
     def pack_path(self) -> str:
         return f"{self.author}_{self.repo}_{self.name}".replace("-", "_")

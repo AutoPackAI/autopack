@@ -7,9 +7,10 @@ from typing import Type, Union
 
 from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackLoadError, AutoPackNotFoundError, AutoPackNotInstalledError
+from autopack.pack import Pack
 
 
-def try_get_pack(pack_id: str, quiet=False) -> Union[Type, None]:
+def try_get_pack(pack_id: str, quiet=False) -> Union[Pack, None]:
     """
     Get a pack based on its ID, in `author/repo_name/pack_name` format. Same as `get_pack` but does not raise an
     Exception. If there is a problem finding or loading a pack it will return None.
@@ -28,7 +29,7 @@ def try_get_pack(pack_id: str, quiet=False) -> Union[Type, None]:
         return None
 
 
-def get_pack(pack_id: str, quiet=False) -> Type:
+def get_pack(pack_id: str, quiet=False) -> Pack:
     """
     Get a pack based on its ID, in `author/repo_name/pack_name` format.
 
@@ -81,7 +82,7 @@ def find_or_create_autopack_dir(depth=0) -> str:
     return autopack_dir
 
 
-def find_pack(pack_data: PackResponse, quiet=False) -> Type:
+def find_pack(pack_data: PackResponse, quiet=False) -> Pack:
     try:
         module = find_module(pack_data)
         if not module:
@@ -93,7 +94,7 @@ def find_pack(pack_data: PackResponse, quiet=False) -> Type:
 
         for _, obj in inspect.getmembers(module):
             if is_valid_pack(obj, pack_data.name):
-                return obj
+                return Pack(tool=obj, **pack_data.__dict__)
 
         message = f"Pack {pack_data.pack_id} found, but {pack_data.name} is not found in its module"
         raise AutoPackNotFoundError(message)

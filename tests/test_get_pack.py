@@ -25,6 +25,7 @@ def pack_response_valid():
                 "description": "What you want to do nothing about",
             }
         },
+        init_args={"api_key": {"type": "string", "description": "The API key to nowhere"}},
     )
 
 
@@ -48,7 +49,10 @@ def test_get_pack_success(mock_get_pack_details, pack_response_valid):
 
     result = get_pack(pack_id)
 
-    assert result == NoopPack
+    assert result.tool == NoopPack
+    assert result.pack_id == pack_response_valid.pack_id
+    assert result.args == pack_response_valid.args
+    assert result.init_args == pack_response_valid.init_args
     mock_get_pack_details.assert_called_once_with(pack_id)
 
 
@@ -92,7 +96,10 @@ def test_try_get_pack_success(mock_get_pack_details, pack_response_valid):
 
     result = try_get_pack(pack_id)
 
-    assert result == NoopPack
+    assert result.tool == NoopPack
+    assert result.pack_id == pack_response_valid.pack_id
+    assert result.args == pack_response_valid.args
+    assert result.init_args == pack_response_valid.init_args
     mock_get_pack_details.assert_called_once_with(pack_id)
 
 

@@ -54,7 +54,7 @@ To use a tool with LangChain, you can retrieve it using the `get_pack` function 
 ```python
 from autopack import get_pack
 
-tool = get_pack("author/repo_name/pack_name")
+tool = get_pack("author/repo_name/pack_name").tool
 
 # Add the tool to the 'packs' argument when instantiating your AgentExecutor
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=[tool()])
