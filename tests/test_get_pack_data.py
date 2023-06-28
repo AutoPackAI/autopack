@@ -22,7 +22,7 @@ def valid_pack_data():
         "name": "WebSearch",
         "dependencies": ["langchain", "requests"],
         "source": "git",
-        "arguments": {"query": "python", "limit": 10},
+        "args": {"query": "python", "limit": 10},
     }
 
 
@@ -34,9 +34,7 @@ def test_fetch_pack_data_success(mock_requests_get, valid_pack_data):
 
     response = get_pack_details("pack_id")
 
-    mock_requests_get.assert_called_once_with(
-        f"{API_URL}api/details", params={"id": "pack_id"}
-    )
+    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
 
     assert response.pack_id == valid_pack_data["pack_id"]
     assert response.author == valid_pack_data["author"]
@@ -44,7 +42,7 @@ def test_fetch_pack_data_success(mock_requests_get, valid_pack_data):
     assert response.module_path == valid_pack_data["module_path"]
     assert response.description == valid_pack_data["description"]
     assert response.dependencies == valid_pack_data["dependencies"]
-    assert response.arguments == valid_pack_data["arguments"]
+    assert response.args == valid_pack_data["args"]
 
 
 def test_fetch_pack_data_invalid_response(mock_requests_get, valid_pack_data):
@@ -58,9 +56,7 @@ def test_fetch_pack_data_invalid_response(mock_requests_get, valid_pack_data):
     with pytest.raises(AutoPackFetchError):
         get_pack_details("pack_id")
 
-    mock_requests_get.assert_called_once_with(
-        f"{API_URL}api/details", params={"id": "pack_id"}
-    )
+    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
 
 
 def test_fetch_pack_data_error_response(mock_requests_get, valid_pack_data):
@@ -71,9 +67,7 @@ def test_fetch_pack_data_error_response(mock_requests_get, valid_pack_data):
     with pytest.raises(AutoPackFetchError):
         get_pack_details("pack_id")
 
-    mock_requests_get.assert_called_once_with(
-        f"{API_URL}api/details", params={"id": "pack_id"}
-    )
+    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
 
 
 def test_fetch_pack_data_not_found_response(mock_requests_get, valid_pack_data):
@@ -83,6 +77,4 @@ def test_fetch_pack_data_not_found_response(mock_requests_get, valid_pack_data):
 
     assert get_pack_details("pack_id") is None
 
-    mock_requests_get.assert_called_once_with(
-        f"{API_URL}api/details", params={"id": "pack_id"}
-    )
+    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})

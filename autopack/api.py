@@ -23,7 +23,7 @@ class PackResponse:
     name: str
     dependencies: list[str]
     source: str
-    arguments: dict[str, Any]
+    args: dict[str, Any]
 
     def pack_path(self) -> str:
         return f"{self.author}_{self.repository}_{self.name}".replace("-", "_")

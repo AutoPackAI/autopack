@@ -19,7 +19,7 @@ def pack_response_valid():
         name="NoopPack",
         dependencies=["langchain", "requests"],
         source="pypi",
-        arguments={
+        args={
             "query": {
                 "type": "string",
                 "description": "What you want to do nothing about",
