@@ -38,7 +38,9 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
         if force:
             install_dependency(dependency)
         else:
-            print(f"This pack requires the dependency {dependency} to be installed. Continue?")
+            print(
+                f"This pack requires the dependency {dependency} to be installed. Continue?"
+            )
             agree = input("[Yn]")
             if agree.lower() == "y" or agree == "":
                 install_dependency(dependency)

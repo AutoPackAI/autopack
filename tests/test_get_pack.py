@@ -25,7 +25,9 @@ def pack_response_valid():
                 "description": "What you want to do nothing about",
             }
         },
-        init_args={"api_key": {"type": "string", "description": "The API key to nowhere"}},
+        init_args={
+            "api_key": {"type": "string", "description": "The API key to nowhere"}
+        },
     )
 
 

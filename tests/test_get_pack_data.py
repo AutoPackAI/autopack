@@ -23,7 +23,9 @@ def valid_pack_data():
         "dependencies": ["langchain", "requests"],
         "source": "git",
         "args": {"query": "python", "limit": 10},
-        "init_args": {"api_key": {"type": "string", "description": "The API key to nowhere"}},
+        "init_args": {
+            "api_key": {"type": "string", "description": "The API key to nowhere"}
+        },
     }
 
 
@@ -35,7 +37,9 @@ def test_fetch_pack_data_success(mock_requests_get, valid_pack_data):
 
     response = get_pack_details("pack_id")
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    mock_requests_get.assert_called_once_with(
+        f"{API_URL}api/details", params={"id": "pack_id"}
+    )
 
     assert response.pack_id == valid_pack_data["pack_id"]
     assert response.author == valid_pack_data["author"]
@@ -57,7 +61,9 @@ def test_fetch_pack_data_invalid_response(mock_requests_get, valid_pack_data):
     with pytest.raises(AutoPackFetchError):
         get_pack_details("pack_id")
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    mock_requests_get.assert_called_once_with(
+        f"{API_URL}api/details", params={"id": "pack_id"}
+    )
 
 
 def test_fetch_pack_data_error_response(mock_requests_get, valid_pack_data):
@@ -68,7 +74,9 @@ def test_fetch_pack_data_error_response(mock_requests_get, valid_pack_data):
     with pytest.raises(AutoPackFetchError):
         get_pack_details("pack_id")
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    mock_requests_get.assert_called_once_with(
+        f"{API_URL}api/details", params={"id": "pack_id"}
+    )
 
 
 def test_fetch_pack_data_not_found_response(mock_requests_get, valid_pack_data):
@@ -78,4 +86,6 @@ def test_fetch_pack_data_not_found_response(mock_requests_get, valid_pack_data):
 
     assert get_pack_details("pack_id") is None
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    mock_requests_get.assert_called_once_with(
+        f"{API_URL}api/details", params={"id": "pack_id"}
+    )
