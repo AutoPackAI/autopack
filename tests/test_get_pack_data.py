@@ -16,7 +16,7 @@ def valid_pack_data():
     return {
         "pack_id": "some_author/my_packs/WebSearch",
         "author": "some_author",
-        "repository": "my_packs",
+        "repo": "my_packs",
         "module_path": "my_packs.web_search",
         "description": "A pack for web searching",
         "name": "WebSearch",
@@ -38,7 +38,7 @@ def test_fetch_pack_data_success(mock_requests_get, valid_pack_data):
 
     assert response.pack_id == valid_pack_data["pack_id"]
     assert response.author == valid_pack_data["author"]
-    assert response.repository == valid_pack_data["repository"]
+    assert response.repo == valid_pack_data["repo"]
     assert response.module_path == valid_pack_data["module_path"]
     assert response.description == valid_pack_data["description"]
     assert response.dependencies == valid_pack_data["dependencies"]

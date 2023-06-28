@@ -13,7 +13,7 @@ def pack_response_valid():
     return PackResponse(
         pack_id="some_author/my_packs/NoopPack",
         author="some_author",
-        repository="my_packs",
+        repo="my_packs",
         module_path="tests.data.packs.noop",
         description="A pack for doing nothing",
         name="NoopPack",

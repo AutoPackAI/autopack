@@ -49,7 +49,7 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
 def install_from_git(pack_data: PackResponse):
     os.makedirs(".autopack", exist_ok=True)
 
-    url = f"https://github.com/{pack_data.author}/{pack_data.repository}.git"
+    url = f"https://github.com/{pack_data.author}/{pack_data.repo}.git"
     pack_path = os.path.join(".autopack", pack_data.pack_path())
 
     if os.path.exists(pack_path):

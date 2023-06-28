@@ -17,7 +17,7 @@ API_URL = os.environ.get("API_URL", "https://autopack.ai/")
 class PackResponse:
     pack_id: str
     author: str
-    repository: str
+    repo: str
     module_path: str
     description: str
     name: str
@@ -26,7 +26,7 @@ class PackResponse:
     args: dict[str, Any]
 
     def pack_path(self) -> str:
-        return f"{self.author}_{self.repository}_{self.name}".replace("-", "_")
+        return f"{self.author}_{self.repo}_{self.name}".replace("-", "_")
 
 
 def get_pack_details(pack_id: str) -> Union[PackResponse, None]:
