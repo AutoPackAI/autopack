@@ -6,8 +6,12 @@ from types import ModuleType
 from typing import Type, Union
 
 from autopack.api import PackResponse, get_pack_details
-from autopack.errors import (AutoPackError, AutoPackLoadError,
-                             AutoPackNotFoundError, AutoPackNotInstalledError)
+from autopack.errors import (
+    AutoPackError,
+    AutoPackLoadError,
+    AutoPackNotFoundError,
+    AutoPackNotInstalledError,
+)
 from autopack.pack import Pack
 
 
@@ -97,7 +101,7 @@ def find_pack(pack_data: PackResponse, quiet=False) -> Pack:
 
         for _, obj in inspect.getmembers(module):
             if is_valid_pack(obj, pack_data.name):
-                return Pack(tool=obj, **pack_data.__dict__)
+                return Pack(**{"tool": obj, **pack_data.__dict__})
 
         message = f"Pack {pack_data.pack_id} found, but {pack_data.name} is not found in its module"
         raise AutoPackNotFoundError(message)

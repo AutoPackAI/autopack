@@ -9,7 +9,7 @@ from marshmallow import ValidationError
 
 from autopack.errors import AutoPackFetchError
 
-API_URL = os.environ.get("API_URL", "https://autopack.ai/")
+API_URL = os.environ.get("AUTOPACK_API_URL", "https://autopack.ai/")
 
 
 @dataclass_json
@@ -25,7 +25,7 @@ class PackResponse:
     name: str
     dependencies: list[str]
     source: str
-    args: dict[str, Any]
+    run_args: dict[str, Any]
     init_args: dict[str, Any]
 
     def pack_path(self) -> str:
