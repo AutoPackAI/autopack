@@ -4,7 +4,7 @@ import pytest
 
 from autopack.api import PackResponse
 from autopack.errors import AutoPackNotFoundError, AutoPackNotInstalledError
-from autopack.get_pack import get_pack, try_get_pack, try_get_packs
+from autopack.get_pack import get_pack, try_get_pack, try_get_packs, get_all_installed_packs
 from tests.data.packs.noop import NoopPack
 
 
@@ -122,6 +122,24 @@ def test_try_get_packs_success(mock_get_pack_details, pack_response_valid, pack_
     mock_get_pack_details.side_effect = [pack_response_valid, pack_response_invalid_class]
 
     results = try_get_packs([pack_response_valid.pack_id, "some/junk/pack"], quiet=False)
+
+    assert len(results) == 1
+    result = results[0]
+
+    assert result.tool == NoopPack
+    assert result.pack_id == pack_response_valid.pack_id
+    assert result.run_args == pack_response_valid.run_args
+    assert result.init_args == pack_response_valid.init_args
+    mock_get_pack_details.assert_has_calls(
+        [call(pack_response_valid.pack_id, remote=False), call(pack_response_invalid_class.pack_id, remote=False)]
+    )
+
+
+@patch("autopack.get_pack.get_pack_details")
+def test_try_get_all_installed_packs(mock_get_pack_details, pack_response_valid):
+    mock_get_pack_details.side_effect = [pack_response_valid, pack_response_invalid_class]
+
+    results = get_all_installed_packs()
 
     assert len(results) == 1
     result = results[0]

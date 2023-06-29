@@ -1,4 +1,6 @@
+import json
 import os
+from json import JSONDecodeError
 
 
 def find_or_create_autopack_dir(depth=0) -> str:
@@ -12,9 +14,7 @@ def find_or_create_autopack_dir(depth=0) -> str:
     if env_dir:
         return env_dir
 
-    autopack_dir = os.path.abspath(
-        os.path.join(os.getcwd(), *[os.pardir] * depth, ".autopack")
-    )
+    autopack_dir = os.path.abspath(os.path.join(os.getcwd(), *[os.pardir] * depth, ".autopack"))
 
     if not os.path.exists(autopack_dir) or not os.path.isdir(autopack_dir):
         if depth > 3:
@@ -23,3 +23,18 @@ def find_or_create_autopack_dir(depth=0) -> str:
         return find_or_create_autopack_dir(depth=depth + 1)
 
     return autopack_dir
+
+
+def load_metadata_file() -> dict[str, any]:
+    """Return the parsed contents of the metadata file, returning an empty dict if not found or otherwise failed"""
+    metadata_dir = find_or_create_autopack_dir()
+    metadata_file = os.path.join(metadata_dir, "pack_metadata.json")
+
+    if not os.path.exists(metadata_file):
+        return {}
+
+    with open(metadata_file, "r") as f:
+        try:
+            return json.load(f)
+        except JSONDecodeError:
+            return {}

@@ -7,7 +7,7 @@ from typing import Type, Union
 from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackLoadError, AutoPackNotFoundError, AutoPackNotInstalledError
 from autopack.pack import Pack
-from autopack.utils import find_or_create_autopack_dir
+from autopack.utils import find_or_create_autopack_dir, load_metadata_file
 
 
 def try_get_pack(pack_id: str, quiet=False, remote=False) -> Union[Pack, None]:
@@ -28,6 +28,12 @@ def try_get_pack(pack_id: str, quiet=False, remote=False) -> Union[Pack, None]:
         return get_pack(pack_id, quiet=quiet, remote=remote)
     except AutoPackError:
         return None
+
+
+def get_all_installed_packs(quiet=False):
+    metadata = load_metadata_file()
+    pack_ids = list(metadata.keys())
+    return try_get_packs(pack_ids, quiet=quiet, remote=False)
 
 
 def try_get_packs(pack_ids: list[str], quiet=False, remote=False) -> list[Pack]:

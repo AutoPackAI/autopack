@@ -3,14 +3,13 @@ import json
 import os
 import shutil
 import subprocess
-from json import JSONDecodeError
 
 from git import Repo
 
 from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack
-from autopack.utils import find_or_create_autopack_dir
+from autopack.utils import find_or_create_autopack_dir, load_metadata_file
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -42,9 +41,7 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
         if force:
             install_dependency(dependency)
         else:
-            print(
-                f"This pack requires the dependency {dependency} to be installed. Continue?"
-            )
+            print(f"This pack requires the dependency {dependency} to be installed. Continue?")
             agree = input("[Yn]")
             if agree.lower() == "y" or agree == "":
                 install_dependency(dependency)
@@ -69,17 +66,7 @@ def install_from_git(pack_data: PackResponse) -> str:
 
 
 def write_metadata_file(pack: PackResponse):
-    metadata_dir = find_or_create_autopack_dir()
-    metadata_file = os.path.join(metadata_dir, "pack_metadata.json")
-
-    metadata = {}
-    if os.path.exists(metadata_file):
-        with open(metadata_file, "r") as f:
-            try:
-                metadata = json.load(f)
-            except JSONDecodeError:
-                pass
-
+    metadata = load_metadata_file()
     metadata[pack.pack_id] = {
         "pack_id": pack.pack_id,
         "author": pack.author,
@@ -135,6 +122,4 @@ def install_pack(pack_id: str, force_dependencies=False):
     if git_dir and os.path.isdir(git_dir):
         shutil.rmtree(git_dir)
 
-    raise AutoPackInstallationError(
-        "Error: Installation completed but pack could still not be found."
-    )
+    raise AutoPackInstallationError("Error: Installation completed but pack could still not be found.")
