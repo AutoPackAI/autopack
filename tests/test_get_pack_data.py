@@ -1,26 +1,10 @@
-import os
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
-from autopack.api import API_URL, PackResponse, get_pack_details
+from autopack.api import API_URL, get_pack_details
 from autopack.errors import AutoPackFetchError
 from autopack.installation import install_pack
-
-
-@pytest.fixture
-def mock_repo_url():
-    with patch.object(PackResponse, "repo_url") as mock:
-        source_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "data", "packs"
-        )
-        mock.return_value = source_dir
-        yield mock
-
-
-@pytest.fixture
-def mock_requests_get(mocker):
-    return mocker.patch("requests.get")
 
 
 @pytest.fixture

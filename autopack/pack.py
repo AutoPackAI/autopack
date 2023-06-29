@@ -35,7 +35,9 @@ class Pack(BaseTool):
             if callable(method):
                 return method
 
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
 
     def init_tool(self, init_args: Optional[dict[str, Any]] = None):
         init_args = init_args or {}

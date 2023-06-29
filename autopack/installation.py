@@ -1,5 +1,4 @@
 import importlib
-import json
 import os
 import shutil
 import subprocess
@@ -9,7 +8,7 @@ from git import Repo
 from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack
-from autopack.utils import find_or_create_autopack_dir, load_metadata_file
+from autopack.utils import find_or_create_autopack_dir, load_metadata_file, write_metadata_file
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -65,7 +64,7 @@ def install_from_git(pack_data: PackResponse) -> str:
     return pack_path
 
 
-def write_metadata_file(pack: PackResponse):
+def update_metadata_file(pack: PackResponse):
     metadata = load_metadata_file()
     metadata[pack.pack_id] = {
         "pack_id": pack.pack_id,
@@ -80,13 +79,12 @@ def write_metadata_file(pack: PackResponse):
         "init_args": pack.init_args,
     }
 
-    with open(metadata_file, "w+") as f:
-        json.dump(metadata, f)
+    write_metadata_file(metadata)
 
 
 def install_pack(pack_id: str, force_dependencies=False):
     print(f"Installing pack: {pack_id}")
-    os.makedirs(".autopack", exist_ok=True)
+    find_or_create_autopack_dir()
 
     pack = try_get_pack(pack_id, quiet=True)
     if pack:
@@ -111,8 +109,9 @@ def install_pack(pack_id: str, force_dependencies=False):
         if pack_data.source == "git":
             git_dir = install_from_git(pack_data)
 
-        write_metadata_file(pack_data)
+        update_metadata_file(pack_data)
         pack = try_get_pack(pack_id, quiet=True)
+
         if pack:
             return True
 

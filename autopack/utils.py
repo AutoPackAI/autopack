@@ -1,6 +1,7 @@
 import json
 import os
 from json import JSONDecodeError
+from typing import Any
 
 
 def find_or_create_autopack_dir(depth=0) -> str:
@@ -25,7 +26,7 @@ def find_or_create_autopack_dir(depth=0) -> str:
     return autopack_dir
 
 
-def load_metadata_file() -> dict[str, any]:
+def load_metadata_file() -> dict[str, Any]:
     """Return the parsed contents of the metadata file, returning an empty dict if not found or otherwise failed"""
     metadata_dir = find_or_create_autopack_dir()
     metadata_file = os.path.join(metadata_dir, "pack_metadata.json")
@@ -38,3 +39,11 @@ def load_metadata_file() -> dict[str, any]:
             return json.load(f)
         except JSONDecodeError:
             return {}
+
+
+def write_metadata_file(data: dict[str, Any]):
+    metadata_dir = find_or_create_autopack_dir()
+    metadata_file = os.path.join(metadata_dir, "pack_metadata.json")
+
+    with open(metadata_file, "w+") as f:
+        json.dump(data, f)
