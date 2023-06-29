@@ -104,7 +104,7 @@ def pack_search(query: str) -> list[PackResponse]:
         data = response.json()
 
         try:
-            return [PackResponse(*datum) for datum in data]
+            return [PackResponse(**datum) for datum in data["packs"]]
         except (ValidationError, TypeError) as e:
             message = f"Pack fetch received invalid data: {e}"
             print(message)

@@ -1,6 +1,7 @@
 import argparse
 
 from autopack.installation import install_pack
+from autopack.search import print_search
 
 
 def parse_args():
@@ -11,6 +12,10 @@ def parse_args():
     install_parser.add_argument(
         "pack", help="ID (author/repo/pack_name) of the pack to install"
     )
+
+    search_parser = subparsers.add_parser("search", help="Search for packs")
+    search_parser.add_argument("query", help="The search query")
+
     parser.add_argument(
         "-f",
         "--force",
@@ -30,6 +35,9 @@ def main():
             print("Installation completed")
         else:
             print("Installation failed")
+
+    if args.command == "search":
+        print_search(args.query)
 
 
 if __name__ == "__main__":
