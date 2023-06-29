@@ -5,7 +5,8 @@ from types import ModuleType
 from typing import Type, Union
 
 from autopack.api import PackResponse, get_pack_details
-from autopack.errors import AutoPackError, AutoPackLoadError, AutoPackNotFoundError, AutoPackNotInstalledError
+from autopack.errors import (AutoPackError, AutoPackLoadError,
+                             AutoPackNotFoundError, AutoPackNotInstalledError)
 from autopack.pack import Pack
 from autopack.utils import find_or_create_autopack_dir, load_metadata_file
 
@@ -111,14 +112,12 @@ def find_pack(pack_data: PackResponse, quiet=False) -> Pack:
 
         for _, obj in inspect.getmembers(module):
             if is_valid_pack(obj, pack_data.name):
-                return Pack(**{"tool": obj, **pack_data.__dict__})
+                return Pack(**{"tool_class": obj, **pack_data.__dict__})
 
         message = f"Pack {pack_data.pack_id} found, but {pack_data.name} is not found in its module"
         raise AutoPackNotFoundError(message)
     except ModuleNotFoundError:
-        message = (
-            f"Pack {pack_data.pack_id} is available but not installed. To install: autopack install {pack_data.pack_id}"
-        )
+        message = f"Pack {pack_data.pack_id} is available but not installed. To install: autopack install {pack_data.pack_id}"
         if not quiet:
             print(message)
         raise AutoPackNotInstalledError(message)
@@ -134,7 +133,9 @@ def is_valid_pack(klass: Type, name: str):
         return False
 
     base_class_names = [k.__name__ for k in klass.__bases__]
-    roughly_adheres_to_interface = hasattr(klass, "run") or "BaseTool" in base_class_names
+    roughly_adheres_to_interface = (
+        hasattr(klass, "run") or "BaseTool" in base_class_names
+    )
     if not roughly_adheres_to_interface:
         return False
 

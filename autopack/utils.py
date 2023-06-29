@@ -15,7 +15,9 @@ def find_or_create_autopack_dir(depth=0) -> str:
     if env_dir:
         return env_dir
 
-    autopack_dir = os.path.abspath(os.path.join(os.getcwd(), *[os.pardir] * depth, ".autopack"))
+    autopack_dir = os.path.abspath(
+        os.path.join(os.getcwd(), *[os.pardir] * depth, ".autopack")
+    )
 
     if not os.path.exists(autopack_dir) or not os.path.isdir(autopack_dir):
         if depth > 3:

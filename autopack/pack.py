@@ -21,19 +21,20 @@ class Pack(BaseTool):
     source: str
     run_args: dict[str, Any]
     init_args: dict[str, Any]
-    tool: Any
+    tool_class: Any
+    tool: Any = None
 
     def __getattr__(self, name):
         """Tool classes may implement helper functions of various sorts, just pass those through to the tool"""
-        if hasattr(self, name):
-            method = getattr(self, name)
-            if callable(method):
-                return method
-
         if hasattr(self.tool, name):
             method = getattr(self.tool, name)
+
             if callable(method):
-                return method
+                # Wrap the call so that `self` is `self.tool`
+                def wrapped_call(*args, **kwargs):
+                    return method(self.tool, *args, **kwargs)
+
+                return wrapped_call
 
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{name}'"
@@ -44,14 +45,14 @@ class Pack(BaseTool):
         is_valid = validate_tool_args(self.init_args, init_args)
         # TODO: Error handling on invalid args
         if is_valid:
-            self.tool(**init_args)
+            self.tool = self.tool_class(**init_args)
 
     def _run(self, *args, **kwargs):
         is_valid = validate_tool_args(self.run_args, kwargs)
         # TODO: Error handling on invalid args
         if is_valid:
             if hasattr(self.tool, "_run"):
-                return self.tool._run(self, *args, **kwargs)
+                return self.tool._run(*args, **kwargs)
             else:
                 return self.run(*args, **kwargs)
 
@@ -72,7 +73,7 @@ class Pack(BaseTool):
         return len(keys) <= 1
 
     @classmethod
-    def from_pack_data(cls, tool: BaseTool, pack_data: PackResponse):
+    def from_pack_data(cls, tool_class: BaseTool, pack_data: PackResponse):
         return cls(
             pack_id=pack_data.pack_id,
             author=pack_data.author,
@@ -84,7 +85,7 @@ class Pack(BaseTool):
             source=pack_data.source,
             run_args=pack_data.run_args,
             init_args=pack_data.init_args,
-            tool=tool,
+            tool_class=tool_class,
         )
 
 

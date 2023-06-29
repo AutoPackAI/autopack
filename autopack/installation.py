@@ -8,7 +8,8 @@ from git import Repo
 from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack
-from autopack.utils import find_or_create_autopack_dir, load_metadata_file, write_metadata_file
+from autopack.utils import (find_or_create_autopack_dir, load_metadata_file,
+                            write_metadata_file)
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -40,7 +41,9 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
         if force:
             install_dependency(dependency)
         else:
-            print(f"This pack requires the dependency {dependency} to be installed. Continue?")
+            print(
+                f"This pack requires the dependency {dependency} to be installed. Continue?"
+            )
             agree = input("[Yn]")
             if agree.lower() == "y" or agree == "":
                 install_dependency(dependency)
@@ -121,4 +124,6 @@ def install_pack(pack_id: str, force_dependencies=False):
     if git_dir and os.path.isdir(git_dir):
         shutil.rmtree(git_dir)
 
-    raise AutoPackInstallationError("Error: Installation completed but pack could still not be found.")
+    raise AutoPackInstallationError(
+        "Error: Installation completed but pack could still not be found."
+    )

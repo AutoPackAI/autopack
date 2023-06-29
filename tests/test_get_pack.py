@@ -68,7 +68,7 @@ def test_get_pack_success(
 
     result = get_pack(pack_id)
 
-    assert result.tool.__name__ == NoopPack.__name__
+    assert result.tool_class.__name__ == NoopPack.__name__
     assert result.pack_id == pack_response_valid.pack_id
     assert result.run_args == pack_response_valid.run_args
     assert result.init_args == pack_response_valid.init_args
@@ -118,7 +118,7 @@ def test_try_get_pack_success(
     # TODO: Why does this work without it being installed lol
     result = try_get_pack(pack_id)
 
-    assert result.tool.__name__ == NoopPack.__name__
+    assert result.tool_class.__name__ == NoopPack.__name__
     assert result.pack_id == pack_response_valid.pack_id
     assert result.run_args == pack_response_valid.run_args
     assert result.init_args == pack_response_valid.init_args
@@ -154,7 +154,7 @@ def test_try_get_packs_success(
     assert len(results) == 1
     result = results[0]
 
-    assert result.tool.__name__ == NoopPack.__name__
+    assert result.tool_class.__name__ == NoopPack.__name__
     assert result.pack_id == pack_response_valid.pack_id
     assert result.run_args == pack_response_valid.run_args
     assert result.init_args == pack_response_valid.init_args
@@ -177,7 +177,7 @@ def test_try_get_all_installed_packs(
     assert len(results) == 1
     result = results[0]
 
-    assert result.tool.__name__ == NoopPack.__name__
+    assert result.tool_class.__name__ == NoopPack.__name__
     assert result.pack_id == pack_response_valid.pack_id
     assert result.run_args == pack_response_valid.run_args
     assert result.init_args == pack_response_valid.init_args
