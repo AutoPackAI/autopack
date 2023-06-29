@@ -1,10 +1,10 @@
-from unittest.mock import patch
+from unittest.mock import patch, call
 
 import pytest
 
 from autopack.api import PackResponse
 from autopack.errors import AutoPackNotFoundError, AutoPackNotInstalledError
-from autopack.get_pack import get_pack, try_get_pack
+from autopack.get_pack import get_pack, try_get_pack, try_get_packs
 from tests.data.packs.noop import NoopPack
 
 
@@ -25,23 +25,24 @@ def pack_response_valid():
                 "description": "What you want to do nothing about",
             }
         },
-        init_args={
-            "api_key": {"type": "string", "description": "The API key to nowhere"}
-        },
+        init_args={"api_key": {"type": "string", "description": "The API key to nowhere"}},
     )
 
 
 @pytest.fixture
 def pack_response_invalid_path(pack_response_valid):
-    pack_response_valid.module_path = "some.bad.path"
-    return pack_response_valid
+    invalid_path_response = PackResponse(**pack_response_valid.__dict__)
+    invalid_path_response.module_path = "some.bad.path"
+    return invalid_path_response
 
 
 @pytest.fixture
 def pack_response_invalid_class(pack_response_valid):
-    pack_response_valid.module_path = "tests.data.packs.invalid"
-    pack_response_valid.name = "InvalidPack"
-    return pack_response_valid
+    invalid_class_response = PackResponse(**pack_response_valid.__dict__)
+    invalid_class_response.pack_id = "some/junk/pack"
+    invalid_class_response.module_path = "tests.data.packs.invalid"
+    invalid_class_response.name = "InvalidPack"
+    return invalid_class_response
 
 
 @patch("autopack.get_pack.get_pack_details")
@@ -96,6 +97,7 @@ def test_try_get_pack_success(mock_get_pack_details, pack_response_valid):
     pack_id = pack_response_valid.pack_id
     mock_get_pack_details.return_value = pack_response_valid
 
+    # TODO: Why does this work without it being installed lol
     result = try_get_pack(pack_id)
 
     assert result.tool == NoopPack
@@ -113,3 +115,21 @@ def test_try_get_pack_not_found(mock_get_pack_details):
     assert try_get_pack(pack_id) is None
 
     mock_get_pack_details.assert_called_once_with(pack_id, remote=False)
+
+
+@patch("autopack.get_pack.get_pack_details")
+def test_try_get_packs_success(mock_get_pack_details, pack_response_valid, pack_response_invalid_class):
+    mock_get_pack_details.side_effect = [pack_response_valid, pack_response_invalid_class]
+
+    results = try_get_packs([pack_response_valid.pack_id, "some/junk/pack"], quiet=False)
+
+    assert len(results) == 1
+    result = results[0]
+
+    assert result.tool == NoopPack
+    assert result.pack_id == pack_response_valid.pack_id
+    assert result.run_args == pack_response_valid.run_args
+    assert result.init_args == pack_response_valid.init_args
+    mock_get_pack_details.assert_has_calls(
+        [call(pack_response_valid.pack_id, remote=False), call(pack_response_invalid_class.pack_id, remote=False)]
+    )

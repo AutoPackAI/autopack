@@ -5,8 +5,7 @@ from types import ModuleType
 from typing import Type, Union
 
 from autopack.api import PackResponse, get_pack_details
-from autopack.errors import (AutoPackError, AutoPackLoadError,
-                             AutoPackNotFoundError, AutoPackNotInstalledError)
+from autopack.errors import AutoPackError, AutoPackLoadError, AutoPackNotFoundError, AutoPackNotInstalledError
 from autopack.pack import Pack
 from autopack.utils import find_or_create_autopack_dir
 
@@ -22,13 +21,34 @@ def try_get_pack(pack_id: str, quiet=False, remote=False) -> Union[Pack, None]:
         remote (bool, Optional): If True, will make network requests to fetch pack metadata
 
     Returns:
-        BaseTool or None: The fetched pack as a LangChain BaseTool object, None if the pack could not be loaded
+        Pack or None: The fetched pack, None if the pack could not be loaded
     """
 
     try:
         return get_pack(pack_id, quiet=quiet, remote=remote)
     except AutoPackError:
         return None
+
+
+def try_get_packs(pack_ids: list[str], quiet=False, remote=False) -> list[Pack]:
+    """
+    Get a list of packs based on their IDs, in `author/repo_name/pack_name` format.
+
+    Args:
+        pack_ids (list[str]): The IDs of the packs to fetch.
+        quiet (bool, Optional): If True, won't print any output
+        remote (bool, Optional): If True, will make network requests to fetch pack metadata
+
+    Returns:
+        list[Pack]: The successfully fetched packs
+    """
+    packs = []
+    for pack_id in pack_ids:
+        pack = try_get_pack(pack_id, quiet, remote)
+        if pack:
+            packs.append(pack)
+
+    return packs
 
 
 def get_pack(pack_id: str, quiet=False, remote=False) -> Pack:
@@ -41,7 +61,7 @@ def get_pack(pack_id: str, quiet=False, remote=False) -> Pack:
         remote (bool, Optional): If True, will make network requests to fetch pack metadata
 
     Returns:
-        BaseTool: The fetched pack as a LangChain BaseTool object
+        Pack: The fetched pack
 
     Raises:
         AutoPackFetchError: If there was an error during the data fetch.
@@ -90,7 +110,9 @@ def find_pack(pack_data: PackResponse, quiet=False) -> Pack:
         message = f"Pack {pack_data.pack_id} found, but {pack_data.name} is not found in its module"
         raise AutoPackNotFoundError(message)
     except ModuleNotFoundError:
-        message = f"Pack {pack_data.pack_id} is available but not installed. To install: autopack install {pack_data.pack_id}"
+        message = (
+            f"Pack {pack_data.pack_id} is available but not installed. To install: autopack install {pack_data.pack_id}"
+        )
         if not quiet:
             print(message)
         raise AutoPackNotInstalledError(message)
@@ -106,9 +128,7 @@ def is_valid_pack(klass: Type, name: str):
         return False
 
     base_class_names = [k.__name__ for k in klass.__bases__]
-    roughly_adheres_to_interface = (
-        hasattr(klass, "run") or "BaseTool" in base_class_names
-    )
+    roughly_adheres_to_interface = hasattr(klass, "run") or "BaseTool" in base_class_names
     if not roughly_adheres_to_interface:
         return False
 
