@@ -8,8 +8,12 @@ from git import Repo
 from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack
-from autopack.utils import (find_or_create_autopack_dir, load_metadata_file,
-                            write_metadata_file)
+from autopack.pack import Pack
+from autopack.utils import (
+    find_or_create_autopack_dir,
+    load_metadata_file,
+    write_metadata_file,
+)
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -85,14 +89,14 @@ def update_metadata_file(pack: PackResponse):
     write_metadata_file(metadata)
 
 
-def install_pack(pack_id: str, force_dependencies=False):
+def install_pack(pack_id: str, force_dependencies=False) -> Pack:
     print(f"Installing pack: {pack_id}")
     find_or_create_autopack_dir()
 
     pack = try_get_pack(pack_id, quiet=True)
     if pack:
         print(f"Pack {pack_id} already installed.")
-        return True
+        return pack
 
     try:
         pack_data = get_pack_details(pack_id, remote=True)
@@ -116,7 +120,7 @@ def install_pack(pack_id: str, force_dependencies=False):
         pack = try_get_pack(pack_id, quiet=True)
 
         if pack:
-            return True
+            return pack
 
     except Exception as e:
         raise AutoPackInstallationError(f"Couldn't install pack due to error {e}")

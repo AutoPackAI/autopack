@@ -5,8 +5,12 @@ from types import ModuleType
 from typing import Type, Union
 
 from autopack.api import PackResponse, get_pack_details
-from autopack.errors import (AutoPackError, AutoPackLoadError,
-                             AutoPackNotFoundError, AutoPackNotInstalledError)
+from autopack.errors import (
+    AutoPackError,
+    AutoPackLoadError,
+    AutoPackNotFoundError,
+    AutoPackNotInstalledError,
+)
 from autopack.pack import Pack
 from autopack.utils import find_or_create_autopack_dir, load_metadata_file
 
