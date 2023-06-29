@@ -16,3 +16,7 @@ class AutoPackNotInstalledError(AutoPackError):
 
 class AutoPackLoadError(AutoPackError):
     pass
+
+
+class AutoPackInstallationError(AutoPackError):
+    pass

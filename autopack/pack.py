@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any, Optional
 
 from langchain.tools import BaseTool
 
@@ -21,10 +21,23 @@ class Pack(BaseTool):
     source: str
     run_args: dict[str, Any]
     init_args: dict[str, Any]
-    # TODO/FIXME: This isn't guaranteed to be an actual BaseTool, by design, but typechecking complains otherwise
-    tool: Type[BaseTool]
+    tool: Any
 
-    def init_tool(self, init_args: dict[str, Any] = None):
+    def __getattr__(self, name):
+        """Tool classes may implement helper functions of various sorts, just pass those through to the tool"""
+        if hasattr(self, name):
+            method = getattr(self, name)
+            if callable(method):
+                return method
+
+        if hasattr(self.tool, name):
+            method = getattr(self.tool, name)
+            if callable(method):
+                return method
+
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+    def init_tool(self, init_args: Optional[dict[str, Any]] = None):
         init_args = init_args or {}
         is_valid = validate_tool_args(self.init_args, init_args)
         # TODO: Error handling on invalid args

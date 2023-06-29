@@ -25,7 +25,9 @@ def pack_response_valid():
                 "description": "What you want to do nothing about",
             }
         },
-        init_args={"api_key": {"type": "string", "description": "The API key to nowhere"}},
+        init_args={
+            "api_key": {"type": "string", "description": "The API key to nowhere"}
+        },
     )
 
 
@@ -53,7 +55,7 @@ def test_get_pack_success(mock_get_pack_details, pack_response_valid):
     assert result.pack_id == pack_response_valid.pack_id
     assert result.run_args == pack_response_valid.run_args
     assert result.init_args == pack_response_valid.init_args
-    mock_get_pack_details.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id, remote=False)
 
 
 @patch("autopack.get_pack.get_pack_details")
@@ -64,7 +66,7 @@ def test_get_pack_not_found(mock_get_pack_details):
     with pytest.raises(AutoPackNotFoundError):
         get_pack(pack_id)
 
-    mock_get_pack_details.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id, remote=False)
 
 
 @patch("autopack.get_pack.get_pack_details")
@@ -75,7 +77,7 @@ def test_get_pack_module_not_found(mock_get_pack_details, pack_response_invalid_
     with pytest.raises(AutoPackNotInstalledError):
         get_pack(pack_id)
 
-    mock_get_pack_details.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id, remote=False)
 
 
 @patch("autopack.get_pack.get_pack_details")
@@ -86,7 +88,7 @@ def test_get_pack_invalid_class(mock_get_pack_details, pack_response_invalid_cla
     with pytest.raises(AutoPackNotFoundError):
         get_pack(pack_id)
 
-    mock_get_pack_details.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id, remote=False)
 
 
 @patch("autopack.get_pack.get_pack_details")
@@ -100,7 +102,7 @@ def test_try_get_pack_success(mock_get_pack_details, pack_response_valid):
     assert result.pack_id == pack_response_valid.pack_id
     assert result.run_args == pack_response_valid.run_args
     assert result.init_args == pack_response_valid.init_args
-    mock_get_pack_details.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id, remote=False)
 
 
 @patch("autopack.get_pack.get_pack_details")
@@ -110,4 +112,4 @@ def test_try_get_pack_not_found(mock_get_pack_details):
 
     assert try_get_pack(pack_id) is None
 
-    mock_get_pack_details.assert_called_once_with(pack_id)
+    mock_get_pack_details.assert_called_once_with(pack_id, remote=False)

@@ -1,12 +1,16 @@
 import importlib
+import json
 import os
+import shutil
 import subprocess
+from json import JSONDecodeError
 
 from git import Repo
 
 from autopack.api import PackResponse, get_pack_details
-from autopack.errors import AutoPackError
+from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack
+from autopack.utils import find_or_create_autopack_dir
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -48,11 +52,11 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
                 print(f"Skipping install of {dependency}")
 
 
-def install_from_git(pack_data: PackResponse):
-    os.makedirs(".autopack", exist_ok=True)
+def install_from_git(pack_data: PackResponse) -> str:
+    autopack_dir = find_or_create_autopack_dir()
 
-    url = f"https://github.com/{pack_data.author}/{pack_data.repo}.git"
-    pack_path = os.path.join(".autopack", pack_data.pack_path())
+    url = pack_data.repo_url()
+    pack_path = os.path.join(autopack_dir, pack_data.pack_path())
 
     if os.path.exists(pack_path):
         print("Repo already exists, pulling updates")
@@ -60,6 +64,37 @@ def install_from_git(pack_data: PackResponse):
     else:
         print(f"Cloning repo into {pack_path}")
         Repo.clone_from(url, pack_path)
+
+    return pack_path
+
+
+def write_metadata_file(pack: PackResponse):
+    metadata_dir = find_or_create_autopack_dir()
+    metadata_file = os.path.join(metadata_dir, "pack_metadata.json")
+
+    metadata = {}
+    if os.path.exists(metadata_file):
+        with open(metadata_file, "r") as f:
+            try:
+                metadata = json.load(f)
+            except JSONDecodeError:
+                pass
+
+    metadata[pack.pack_id] = {
+        "pack_id": pack.pack_id,
+        "author": pack.author,
+        "repo": pack.repo,
+        "module_path": pack.module_path,
+        "description": pack.description,
+        "name": pack.name,
+        "dependencies": pack.dependencies,
+        "source": pack.source,
+        "run_args": pack.run_args,
+        "init_args": pack.init_args,
+    }
+
+    with open(metadata_file, "w+") as f:
+        json.dump(metadata, f)
 
 
 def install_pack(pack_id: str, force_dependencies=False):
@@ -72,25 +107,34 @@ def install_pack(pack_id: str, force_dependencies=False):
         return True
 
     try:
-        pack_data = get_pack_details(pack_id)
+        pack_data = get_pack_details(pack_id, remote=True)
 
         if not pack_data:
-            return False
+            raise AutoPackInstallationError(f"Could not find pack details")
+
         ask_to_install_dependencies(pack_data.dependencies, force_dependencies)
     except AutoPackError as e:
         # Maybe do something else
-        print(f"Could not install pack {e}")
-        return False
+        raise AutoPackInstallationError(f"Could not install pack {e}")
     except BaseException as e:
-        print(f"Could not install pack {e}")
-        return False
+        raise AutoPackInstallationError(f"Could not install pack {e}")
 
-    if pack_data.source == "git":
-        install_from_git(pack_data)
+    git_dir = ""
+    try:
+        if pack_data.source == "git":
+            git_dir = install_from_git(pack_data)
 
-    pack = try_get_pack(pack_id, quiet=True)
-    if pack:
-        return True
+        write_metadata_file(pack_data)
+        pack = try_get_pack(pack_id, quiet=True)
+        if pack:
+            return True
 
-    print("Error: Installation completed but pack could still not be found.")
-    return False
+    except Exception as e:
+        raise AutoPackInstallationError(f"Couldn't install pack due to error {e}")
+
+    if git_dir and os.path.isdir(git_dir):
+        shutil.rmtree(git_dir)
+
+    raise AutoPackInstallationError(
+        "Error: Installation completed but pack could still not be found."
+    )

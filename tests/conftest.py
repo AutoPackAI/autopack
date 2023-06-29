@@ -1,3 +1,5 @@
+import os
+import shutil
 import sys
 
 import pytest
@@ -13,3 +15,15 @@ def go_to_tmpdir(request):
     # Chdir only for the duration of the test.
     with tmpdir.as_cwd():
         yield
+
+
+@pytest.fixture(autouse=True)
+def setup_autopack_dir(go_to_tmpdir):
+    source_dir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "data", "dot_autopack"
+    )
+    destination_dir = ".autopack"
+
+    if os.path.isdir(destination_dir):
+        shutil.rmtree(destination_dir)
+    shutil.copytree(source_dir, destination_dir)

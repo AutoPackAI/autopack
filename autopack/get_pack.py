@@ -1,21 +1,17 @@
 import importlib
 import inspect
-import os
 import sys
 from types import ModuleType
 from typing import Type, Union
 
 from autopack.api import PackResponse, get_pack_details
-from autopack.errors import (
-    AutoPackError,
-    AutoPackLoadError,
-    AutoPackNotFoundError,
-    AutoPackNotInstalledError,
-)
+from autopack.errors import (AutoPackError, AutoPackLoadError,
+                             AutoPackNotFoundError, AutoPackNotInstalledError)
 from autopack.pack import Pack
+from autopack.utils import find_or_create_autopack_dir
 
 
-def try_get_pack(pack_id: str, quiet=False) -> Union[Pack, None]:
+def try_get_pack(pack_id: str, quiet=False, remote=False) -> Union[Pack, None]:
     """
     Get a pack based on its ID, in `author/repo_name/pack_name` format. Same as `get_pack` but does not raise an
     Exception. If there is a problem finding or loading a pack it will return None.
@@ -23,24 +19,26 @@ def try_get_pack(pack_id: str, quiet=False) -> Union[Pack, None]:
     Args:
         pack_id (str): The ID of the pack to fetch.
         quiet (bool, Optional): If True, won't print any output
+        remote (bool, Optional): If True, will make network requests to fetch pack metadata
 
     Returns:
         BaseTool or None: The fetched pack as a LangChain BaseTool object, None if the pack could not be loaded
     """
 
     try:
-        return get_pack(pack_id, quiet=quiet)
+        return get_pack(pack_id, quiet=quiet, remote=remote)
     except AutoPackError:
         return None
 
 
-def get_pack(pack_id: str, quiet=False) -> Pack:
+def get_pack(pack_id: str, quiet=False, remote=False) -> Pack:
     """
     Get a pack based on its ID, in `author/repo_name/pack_name` format.
 
     Args:
         pack_id (str): The ID of the pack to fetch.
         quiet (bool, Optional): If True, won't print any output
+        remote (bool, Optional): If True, will make network requests to fetch pack metadata
 
     Returns:
         BaseTool: The fetched pack as a LangChain BaseTool object
@@ -51,7 +49,7 @@ def get_pack(pack_id: str, quiet=False) -> Pack:
         AutoPackNotFoundError: If no pack matching that ID was found.
         AutoPackLoadError: If the pack was found but there was an error importing or finding the pack class.
     """
-    pack_data = get_pack_details(pack_id)
+    pack_data = get_pack_details(pack_id, remote=remote)
 
     if not pack_data:
         raise AutoPackNotFoundError()
@@ -73,20 +71,6 @@ def find_module(pack_data: PackResponse) -> ModuleType:
             return importlib.import_module(pack_data.pack_path() + "." + module_path)
         finally:
             sys.path.remove(autopack_dir)
-
-
-def find_or_create_autopack_dir(depth=0) -> str:
-    """Search in current and parent directories looking for .autopack"""
-    autopack_dir = os.path.abspath(
-        os.path.join(os.getcwd(), *[os.pardir] * depth, ".autopack")
-    )
-
-    if not os.path.exists(autopack_dir) or not os.path.isdir(autopack_dir):
-        if depth > 3:
-            raise ModuleNotFoundError(".autopack directory could not be found")
-        return find_or_create_autopack_dir(depth=depth + 1)
-
-    return autopack_dir
 
 
 def find_pack(pack_data: PackResponse, quiet=False) -> Pack:
