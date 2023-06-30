@@ -1,6 +1,7 @@
 # AutoPack
 
-AutoPack is a Python library and CLI designed to interact with the AutoPack repository, a collection of tools for AI
+AutoPack is a Python library and CLI designed to interact with the [AutoPack repository](https://autopack.ai), a
+collection of tools for AI
 Agents, currently tailored for LangChain implementations.
 
 ## Installation
