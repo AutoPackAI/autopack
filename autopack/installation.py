@@ -9,11 +9,8 @@ from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack
 from autopack.pack import Pack
-from autopack.utils import (
-    find_or_create_autopack_dir,
-    load_metadata_file,
-    write_metadata_file,
-)
+from autopack.utils import (find_or_create_autopack_dir, load_metadata_file,
+                            write_metadata_file)
 
 
 def is_dependency_installed(dependency: str) -> bool:

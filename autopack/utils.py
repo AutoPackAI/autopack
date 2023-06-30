@@ -1,7 +1,16 @@
+import importlib
+import inspect
 import json
 import os
+import sys
 from json import JSONDecodeError
-from typing import Any
+from types import ModuleType
+from typing import Any, Type
+
+from autopack.errors import (AutoPackLoadError, AutoPackNotFoundError,
+                             AutoPackNotInstalledError)
+from autopack.pack import Pack
+from autopack.pack_response import PackResponse
 
 
 def find_or_create_autopack_dir(depth=0) -> str:
@@ -49,3 +58,78 @@ def write_metadata_file(data: dict[str, Any]):
 
     with open(metadata_file, "w+") as f:
         json.dump(data, f)
+
+
+def find_module(pack_data: PackResponse) -> ModuleType:
+    module_path = pack_data.module_path
+
+    # Just in case they already have it in their path for whatever reason
+    try:
+        return importlib.import_module(module_path)
+    except:
+        autopack_dir = find_or_create_autopack_dir()
+        sys.path.insert(0, autopack_dir)
+
+        try:
+            return importlib.import_module(pack_data.pack_path() + "." + module_path)
+        finally:
+            sys.path.remove(autopack_dir)
+
+
+def fetch_pack_object(pack_data: PackResponse, quiet=False) -> Pack:
+    try:
+        module = find_module(pack_data)
+        if not module:
+            message = (
+                f"Pack {pack_data.pack_id} could not be found. Either it is misconfigured or .autopack directory not "
+                f"found"
+            )
+            raise AutoPackNotFoundError(message)
+
+        for _, obj in inspect.getmembers(module):
+            if is_valid_pack(obj, pack_data.name):
+                return Pack(**{"tool_class": obj, **pack_data.__dict__})
+
+        message = f"Pack {pack_data.pack_id} found, but {pack_data.name} is not found in its module"
+        raise AutoPackNotFoundError(message)
+    except ModuleNotFoundError:
+        message = f"Pack {pack_data.pack_id} is available but not installed. To install: autopack install {pack_data.pack_id}"
+        if not quiet:
+            print(message)
+        raise AutoPackNotInstalledError(message)
+    except (ImportError, AttributeError) as e:
+        message = f"Error loading {pack_data.pack_id}: {e}"
+        if not quiet:
+            print(message)
+        raise AutoPackLoadError(message)
+
+
+def is_valid_pack(klass: Type, name: str):
+    if not inspect.isclass(klass):
+        return False
+
+    base_class_names = [k.__name__ for k in klass.__bases__]
+    roughly_adheres_to_interface = (
+        hasattr(klass, "run") or "BaseTool" in base_class_names
+    )
+    if not roughly_adheres_to_interface:
+        return False
+
+    # Pack name is the class name
+    if name == klass.__name__:
+        return True
+
+    # Pack class has a name class variable
+    if hasattr(klass, "name"):
+        if callable(klass.name):
+            klass_name = klass.name()
+        else:
+            klass_name = klass.name
+        return klass_name == name
+
+    # Pack class has a __fields__ class variable (e.g. LangChain's BaseTool)
+    if hasattr(klass, "__fields__"):
+        name_field = klass.__fields__.get("name")
+        return name_field and name_field.default == name
+
+    return False

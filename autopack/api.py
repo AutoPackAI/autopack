@@ -1,41 +1,16 @@
 import json
 import os
-from dataclasses import dataclass
 from json import JSONDecodeError
-from typing import Any
 from urllib.parse import urljoin
 
 import requests
-from dataclasses_json import dataclass_json
 from marshmallow import ValidationError
 
 from autopack.errors import AutoPackFetchError
+from autopack.pack_response import PackResponse
 from autopack.utils import find_or_create_autopack_dir
 
 API_URL = os.environ.get("AUTOPACK_API_URL", "https://autopack.ai/")
-
-
-@dataclass_json
-@dataclass
-class PackResponse:
-    """Class to map Pack properties from the API. Internal use only."""
-
-    pack_id: str
-    author: str
-    repo: str
-    module_path: str
-    description: str
-    name: str
-    dependencies: list[str]
-    source: str
-    run_args: dict[str, Any]
-    init_args: dict[str, Any]
-
-    def pack_path(self) -> str:
-        return f"{self.author}_{self.repo}_{self.name}".replace("-", "_")
-
-    def repo_url(self) -> str:
-        return f"https://github.com/{self.author}/{self.repo}.git"
 
 
 def get_pack_details(pack_id: str, remote=False) -> PackResponse:
