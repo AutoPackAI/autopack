@@ -25,10 +25,10 @@ AutoPack provides both a CLI and a Python library for interacting with the AutoP
 
 The `autopack` Python library allows you to work with Packs programmatically. Key functionalities include:
 
-- Search for Packs: `autopack.pack_search(query)`
-- Get a Pack: `autopack.get_pack(pack_id)`
-- Get all installed Packs: `autopack.get_all_installed_packs()`
-- Install a Pack: `autopack.install_pack(pack_id)`
+- Search for Packs: `pack_search(query)`
+- Get a Pack: `get_pack(pack_id)`
+- Get all installed Packs: `get_all_installed_packs()`
+- Install a Pack: `install_pack(pack_id)`
 
 For detailed examples and more information, refer to
 the [AutoPack documentation](https://github.com/AutoPackAI/autopack/wiki).
