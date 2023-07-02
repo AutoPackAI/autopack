@@ -29,6 +29,7 @@ The `autopack` Python library allows you to work with Packs programmatically. Ke
 - Get a Pack: `get_pack(pack_id)`
 - Get all installed Packs: `get_all_installed_packs()`
 - Install a Pack: `install_pack(pack_id)`
+- Select packs using an LLM: `select_packs(task_description, llm)`
 
 For detailed examples and more information, refer to
 the [AutoPack documentation](https://github.com/AutoPackAI/autopack/wiki).
