@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import HumanMessage
@@ -6,8 +7,8 @@ from langchain.schema import HumanMessage
 from autopack.api import pack_search
 
 TOOL_SELECTION_PROMPT = """
-I have a list of tools to choose from and a task I need to accomplish. Please tell me all of the tools that are
-necessary for me to accomplish my task. Respond only with the tool_ids as a valid JSON array.
+I have a list of tools to choose from and a task I need to accomplish. Give me, as a valid JSON array, a list of the
+Tool IDs that are necessary to complete this task. Return only the JSON array and no other content.
 
 ---- TASK ----
 {user_input}
@@ -73,4 +74,9 @@ def ask_llm(prompt: str, llm: BaseChatModel):
     message = HumanMessage(content=prompt)
 
     response = llm(messages=[message])
-    return json.loads(response.content)
+
+    try:
+        return json.loads(response.content)
+    except JSONDecodeError as e:
+        # TODO: Better handle error
+        return []
