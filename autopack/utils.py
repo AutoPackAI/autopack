@@ -61,19 +61,18 @@ def write_metadata_file(data: dict[str, Any]):
 
 
 def find_module(pack_data: PackResponse) -> ModuleType:
+    autopack_dir = find_or_create_autopack_dir()
     module_path = pack_data.module_path
+    pack_module_path = os.path.join(autopack_dir, pack_data.pack_path())
 
-    # Just in case they already have it in their path for whatever reason
+    sys.path.insert(0, autopack_dir)
+    sys.path.insert(0, pack_module_path)
+
     try:
         return importlib.import_module(module_path)
-    except:
-        autopack_dir = find_or_create_autopack_dir()
-        sys.path.insert(0, autopack_dir)
-
-        try:
-            return importlib.import_module(pack_data.pack_path() + "." + module_path)
-        finally:
-            sys.path.remove(autopack_dir)
+    finally:
+        sys.path.remove(autopack_dir)
+        sys.path.remove(pack_module_path)
 
 
 def fetch_pack_object(pack_data: PackResponse, quiet=False) -> Pack:

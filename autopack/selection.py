@@ -52,16 +52,14 @@ def select_packs(task_description: str, llm: BaseChatModel) -> list[str]:
         )
 
     tools_string = json.dumps(pack_summaries)
-    prompt = TOOL_SELECTION_PROMPT.format(user_input=task_description, tools_string=tools_string)
+    prompt = TOOL_SELECTION_PROMPT.format(
+        user_input=task_description, tools_string=tools_string
+    )
 
     pseudo_ids = ask_llm(prompt, llm)
 
     selected_packs = []
     for pseudo_id in pseudo_ids:
-        # Sometimes they'll give an array like [{'tool_id': 1234}]. Try to accommodate that.
-        if type(pseudo_id) == dict:
-            pseudo_id = pseudo_id.get("tool_id")
-
         # Get the proper pack_id from the pseudo_id
         proper_id = packs_by_pseudo_id[pseudo_id]
         selected_packs.append(proper_id)

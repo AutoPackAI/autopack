@@ -21,7 +21,9 @@ class PackResponse:
     init_args: dict[str, Any]
 
     def pack_path(self) -> str:
-        return f"{self.author}_{self.repo}_{self.name}".replace("-", "_")
+        return f"{self.author}_{self.repo}_{self.name}".replace("-", "_").replace(
+            " ", "_"
+        )
 
     def repo_url(self) -> str:
         return f"https://github.com/{self.author}/{self.repo}.git"
