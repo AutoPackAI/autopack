@@ -1,5 +1,4 @@
 import json
-from json import JSONDecodeError
 
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import HumanMessage
@@ -7,8 +6,9 @@ from langchain.schema import HumanMessage
 from autopack.api import pack_search
 
 TOOL_SELECTION_PROMPT = """
-I have a list of tools to choose from and a task I need to accomplish. Give me, as a valid JSON array, a list of the
-Tool IDs that are necessary to complete this task. Return only the JSON array and no other content.
+You are an autonomous AI Agent. I have a list of tools to choose from and a task I need you to accomplish. Recommend
+tools that would be required for you to complete the task. Return only a comma-separated list of tool_ids and no
+other content.
 
 ---- TASK ----
 {user_input}
@@ -35,16 +35,11 @@ def select_packs(task_description: str, llm: BaseChatModel) -> list[str]:
     """
 
     packs = pack_search("")
-    packs_by_pseudo_id = {}
     pack_summaries = []
     for pack in packs:
-        # The AI can get messed up with the author/repo/name Pack IDs here, so give a hashed pack ID
-        pseudo_id = pack.pack_id.__hash__()
-        packs_by_pseudo_id[pseudo_id] = pack.pack_id
-
         pack_summaries.append(
             {
-                "tool_id": pseudo_id,
+                "tool_id": pack.pack_id,
                 "name": pack.name,
                 "description": pack.description,
                 "arguments": pack.run_args,
@@ -56,25 +51,15 @@ def select_packs(task_description: str, llm: BaseChatModel) -> list[str]:
         user_input=task_description, tools_string=tools_string
     )
 
-    pseudo_ids = ask_llm(prompt, llm)
-
-    selected_packs = []
-    for pseudo_id in pseudo_ids:
-        # Get the proper pack_id from the pseudo_id
-        proper_id = packs_by_pseudo_id[pseudo_id]
-        selected_packs.append(proper_id)
+    selected_packs = ask_llm(prompt, llm)
 
     return selected_packs
 
 
-def ask_llm(prompt: str, llm: BaseChatModel):
+def ask_llm(prompt: str, llm: BaseChatModel) -> list[str]:
     """Encapsulate the OpenAI specific stuff to easier support other frameworks in the future"""
     message = HumanMessage(content=prompt)
 
     response = llm(messages=[message])
 
-    try:
-        return json.loads(response.content)
-    except JSONDecodeError as e:
-        # TODO: Better handle error
-        return []
+    return response.content.split(",")
