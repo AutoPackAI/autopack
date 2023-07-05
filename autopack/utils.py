@@ -7,8 +7,7 @@ from json import JSONDecodeError
 from types import ModuleType
 from typing import Any, Type
 
-from autopack.errors import (AutoPackLoadError, AutoPackNotFoundError,
-                             AutoPackNotInstalledError)
+from autopack.errors import AutoPackLoadError, AutoPackNotFoundError, AutoPackNotInstalledError
 from autopack.pack import Pack
 from autopack.pack_response import PackResponse
 
@@ -24,9 +23,7 @@ def find_or_create_autopack_dir(depth=0) -> str:
     if env_dir:
         return env_dir
 
-    autopack_dir = os.path.abspath(
-        os.path.join(os.getcwd(), *[os.pardir] * depth, ".autopack")
-    )
+    autopack_dir = os.path.abspath(os.path.join(os.getcwd(), *[os.pardir] * depth, ".autopack"))
 
     if not os.path.exists(autopack_dir) or not os.path.isdir(autopack_dir):
         if depth > 3:
@@ -92,7 +89,9 @@ def fetch_pack_object(pack_data: PackResponse, quiet=False) -> Pack:
         message = f"Pack {pack_data.pack_id} found, but {pack_data.name} is not found in its module"
         raise AutoPackNotFoundError(message)
     except ModuleNotFoundError:
-        message = f"Pack {pack_data.pack_id} is available but not installed. To install: autopack install {pack_data.pack_id}"
+        message = (
+            f"Pack {pack_data.pack_id} is available but not installed. To install: autopack install {pack_data.pack_id}"
+        )
         if not quiet:
             print(message)
         raise AutoPackNotInstalledError(message)
@@ -108,9 +107,7 @@ def is_valid_pack(klass: Type, name: str):
         return False
 
     base_class_names = [k.__name__ for k in klass.__bases__]
-    roughly_adheres_to_interface = (
-        hasattr(klass, "run") or "BaseTool" in base_class_names
-    )
+    roughly_adheres_to_interface = hasattr(klass, "run") or "BaseTool" in base_class_names
     if not roughly_adheres_to_interface:
         return False
 
