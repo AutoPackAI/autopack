@@ -106,26 +106,10 @@ def is_valid_pack(klass: Type, name: str):
     if not inspect.isclass(klass):
         return False
 
-    base_class_names = [k.__name__ for k in klass.__bases__]
-    roughly_adheres_to_interface = hasattr(klass, "run") or "BaseTool" in base_class_names
-    if not roughly_adheres_to_interface:
-        return False
-
-    # Pack name is the class name
-    if name == klass.__name__:
-        return True
-
-    # Pack class has a name class variable
-    if hasattr(klass, "name"):
-        if callable(klass.name):
-            klass_name = klass.name()
-        else:
-            klass_name = klass.name
-        return klass_name == name
-
-    # Pack class has a __fields__ class variable (e.g. LangChain's BaseTool)
     if hasattr(klass, "__fields__"):
         name_field = klass.__fields__.get("name")
-        return name_field and name_field.default == name
+        if name_field and name_field.default:
+            snaked_name = name_field.default.lower().replace(" ", "_")
+            return name_field and snaked_name == name
 
     return False

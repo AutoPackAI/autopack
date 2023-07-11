@@ -9,8 +9,7 @@ from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack
 from autopack.pack import Pack
-from autopack.utils import (find_or_create_autopack_dir, load_metadata_file,
-                            write_metadata_file)
+from autopack.utils import find_or_create_autopack_dir, load_metadata_file, write_metadata_file
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -42,9 +41,7 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
         if force:
             install_dependency(dependency)
         else:
-            print(
-                f"This pack requires the dependency {dependency} to be installed. Continue?"
-            )
+            print(f"This pack requires the dependency {dependency} to be installed. Continue?")
             agree = input("[Yn]")
             if agree.lower() == "y" or agree == "":
                 install_dependency(dependency)
@@ -90,7 +87,7 @@ def install_pack(pack_id: str, force_dependencies=False) -> Pack:
     print(f"Installing pack: {pack_id}")
     find_or_create_autopack_dir()
 
-    pack = try_get_pack(pack_id, quiet=True)
+    pack = try_get_pack(pack_id, quiet=False)
     if pack:
         print(f"Pack {pack_id} already installed.")
         return pack
@@ -99,7 +96,7 @@ def install_pack(pack_id: str, force_dependencies=False) -> Pack:
         pack_data = get_pack_details(pack_id, remote=True)
 
         if not pack_data:
-            raise AutoPackInstallationError(f"Could not find pack details")
+            raise AutoPackInstallationError("Could not find pack details")
 
         ask_to_install_dependencies(pack_data.dependencies, force_dependencies)
     except AutoPackError as e:
@@ -114,7 +111,7 @@ def install_pack(pack_id: str, force_dependencies=False) -> Pack:
             git_dir = install_from_git(pack_data)
 
         update_metadata_file(pack_data)
-        pack = try_get_pack(pack_id, quiet=True)
+        pack = try_get_pack(pack_id, quiet=False)
 
         if pack:
             return pack
@@ -125,6 +122,4 @@ def install_pack(pack_id: str, force_dependencies=False) -> Pack:
     if git_dir and os.path.isdir(git_dir):
         shutil.rmtree(git_dir)
 
-    raise AutoPackInstallationError(
-        "Error: Installation completed but pack could still not be found."
-    )
+    raise AutoPackInstallationError("Error: Installation completed but pack could still not be found.")

@@ -1,8 +1,9 @@
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING, TYPE_CHECKING
 
 from langchain.tools import BaseTool
 
-from autopack.api import PackResponse
+if TYPE_CHECKING:
+    from autopack.api import PackResponse
 
 
 class Pack(BaseTool):
@@ -36,7 +37,9 @@ class Pack(BaseTool):
 
                 return wrapped_call
 
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
 
     def init_tool(self, init_args: Optional[dict[str, Any]] = None):
         init_args = init_args or {}
@@ -71,7 +74,7 @@ class Pack(BaseTool):
         return len(keys) <= 1
 
     @classmethod
-    def from_pack_data(cls, tool_class: BaseTool, pack_data: PackResponse):
+    def from_pack_data(cls, tool_class: BaseTool, pack_data: "PackResponse"):
         return cls(
             pack_id=pack_data.pack_id,
             author=pack_data.author,
@@ -90,3 +93,4 @@ class Pack(BaseTool):
 def validate_tool_args(spec: dict[str, Any], actual: dict[str, Any]):
     # TODO: This. Plus maybe some helpful errors?
     return True
+
