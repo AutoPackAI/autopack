@@ -1,29 +1,20 @@
 import json
 
 from langchain.chat_models.base import BaseChatModel
-from langchain.schema import SystemMessage
+from langchain.schema import SystemMessage, BaseMessage
 
 from autopack.api import pack_search
 
-TOOL_SELECTION_PROMPT_TEMPLATE = """You are an autonomous AI Assistant named AutoPack. AutoPack works on behalf of another AI Assistant who will be completing tasks. AutoPack is excellent at choosing the right tools for the task. Keeping a small tool set is important, so AutoPack aims to include only the tools that are required. AutoPack has access to the following tools:
---- TOOLS ---
+TOOL_SELECTION_PROMPT_TEMPLATE = """Given the task and the tool list provided below, please return a JSON object identifying which tools would be most suitable for completing the task, along with reasons for each choice. The response should only include the JSON object, without any additional explanatory text.
+
+Please provide the recommended tools in the following format:
+{{"tools": [{{"tool_id": tool_id, "reason": reason_for_recommending }}]}}
+
+Task: {user_input}
+
+Tools List (in JSON format):
 {tools_string}
---- END TOOLS ---
-Respond with the following JSON structure:
---- FORMAT INSTRUCTIONS ---
-```json
-{{"tools": [{{ "tool_id": tool_id, "reason": reason_for_recommending }}] }}
-```
-For example, if you think tool #1234 might be necessary:
-```json
-{{'tools': [{{ "tool_id": 1234, "reason": "The breathe tool might be necessary because the user needs oxygen"}}]}}
-```
---- END FORMAT INSTRUCTIONS ---
----- TASK ----
-{user_input}
---- END TASK ---
-Given the TASK, return all of the tools that are necessary to complete the task.
-Begin!"""
+"""
 
 
 def select_packs(task_description: str, llm: BaseChatModel) -> list[str]:
@@ -44,33 +35,33 @@ def select_packs(task_description: str, llm: BaseChatModel) -> list[str]:
     """
 
     packs = pack_search("")
-    pack_summaries = ""
+    pack_summaries = []
     for i, pack in enumerate(packs):
         # Use a number instead of a tool ID because the AI can mismatch tool names and repos
         pseudo_id = i + 1
-        pack_summaries += f"""--- TOOL #{pseudo_id} ---
-tool_id: {pseudo_id}
-name: "{pack.name}"
-description: "{pack.description}"
-arguments: "{pack.run_args}"
-"""
+        pack_summaries.append(
+            {"tool_id": pseudo_id, "name": pack.name, "description": pack.description, "arguments": pack.run_args}
+        )
 
-    prompt = TOOL_SELECTION_PROMPT_TEMPLATE.format(user_input=task_description, tools_string=pack_summaries)
+    prompt = TOOL_SELECTION_PROMPT_TEMPLATE.format(user_input=task_description, tools_string=json.dumps(pack_summaries))
 
     response = ask_llm(prompt, llm)
 
-    tools = json.loads(response.content)
     # TODO Handle json errors, perhaps a retry
+    try:
+        tools = json.loads(response.content)
+    except json.JSONDecodeError as e:
+        return []
 
     selected_packs = []
     for selected_tool in tools.get("tools"):
-        tool_index = selected_tool.get("tool_id")
+        tool_index = int(selected_tool.get("tool_id"))
         selected_packs.append(packs[tool_index - 1].pack_id)
 
     return selected_packs
 
 
-def ask_llm(prompt: str, llm: BaseChatModel) -> list[str]:
+def ask_llm(prompt: str, llm: BaseChatModel) -> BaseMessage:
     """Encapsulate the OpenAI specific stuff to easier support other frameworks in the future"""
     message = SystemMessage(content=prompt)
 

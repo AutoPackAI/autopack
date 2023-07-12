@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autopack-tools"
-version = "0.2.7"
+version = "0.2.8"
 repository = "https://github.com/AutoPackAI/autopack"
 homepage = "https://autopack.ai"
 description = "Package Manager for AI Agent tools"
@@ -37,3 +37,12 @@ gitpython = "^3.1.31"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+
+[tool.black]
+line-length = 120
+
+[flake8]
+max-line-length = 120

@@ -22,9 +22,7 @@ def go_to_tmpdir(request):
 
 @pytest.fixture(autouse=True)
 def setup_autopack_dir(go_to_tmpdir):
-    source_dir = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "data", "dot_autopack"
-    )
+    source_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "dot_autopack")
     destination_dir = ".autopack"
 
     if os.path.isdir(destination_dir):
@@ -35,9 +33,7 @@ def setup_autopack_dir(go_to_tmpdir):
 @pytest.fixture
 def mock_repo_url():
     with patch.object(PackResponse, "repo_url") as mock:
-        source_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "data", "packs"
-        )
+        source_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "packs")
         mock.return_value = source_dir
         yield mock
 

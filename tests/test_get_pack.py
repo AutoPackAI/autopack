@@ -4,8 +4,7 @@ import pytest
 
 from autopack.api import PackResponse
 from autopack.errors import AutoPackNotFoundError, AutoPackNotInstalledError
-from autopack.get_pack import (get_all_installed_packs, get_pack, try_get_pack,
-                               try_get_packs)
+from autopack.get_pack import get_all_installed_packs, get_pack, try_get_pack, try_get_packs
 from autopack.installation import install_pack
 from tests.data.packs.noop import NoopPack
 
@@ -18,7 +17,7 @@ def pack_response_valid():
         repo="my_packs",
         module_path="noop",
         description="A pack for doing nothing",
-        name="NoopPack",
+        name="noop_pack",
         dependencies=["langchain", "requests"],
         source="git",
         run_args={
@@ -27,9 +26,7 @@ def pack_response_valid():
                 "description": "What you want to do nothing about",
             }
         },
-        init_args={
-            "api_key": {"type": "string", "description": "The API key to nowhere"}
-        },
+        init_args={"api_key": {"type": "string", "description": "The API key to nowhere"}},
     )
 
 
@@ -60,9 +57,7 @@ def pack_response_invalid_class(pack_response_valid):
 
 
 @patch("autopack.get_pack.get_pack_details")
-def test_get_pack_success(
-    mock_get_pack_details, pack_response_valid, installed_valid_pack
-):
+def test_get_pack_success(mock_get_pack_details, pack_response_valid, installed_valid_pack):
     pack_id = pack_response_valid.pack_id
     mock_get_pack_details.return_value = pack_response_valid
 
@@ -109,9 +104,7 @@ def test_get_pack_invalid_class(mock_get_pack_details, pack_response_invalid_cla
 
 
 @patch("autopack.get_pack.get_pack_details")
-def test_try_get_pack_success(
-    mock_get_pack_details, pack_response_valid, installed_valid_pack
-):
+def test_try_get_pack_success(mock_get_pack_details, pack_response_valid, installed_valid_pack):
     pack_id = pack_response_valid.pack_id
     mock_get_pack_details.return_value = pack_response_valid
 
@@ -147,9 +140,7 @@ def test_try_get_packs_success(
         pack_response_invalid_class,
     ]
 
-    results = try_get_packs(
-        [pack_response_valid.pack_id, "some/junk/pack"], quiet=False
-    )
+    results = try_get_packs([pack_response_valid.pack_id, "some/junk/pack"], quiet=False)
 
     assert len(results) == 1
     result = results[0]
@@ -167,9 +158,7 @@ def test_try_get_packs_success(
 
 
 @patch("autopack.get_pack.get_pack_details")
-def test_try_get_all_installed_packs(
-    mock_get_pack_details, pack_response_valid, installed_valid_pack
-):
+def test_try_get_all_installed_packs(mock_get_pack_details, pack_response_valid, installed_valid_pack):
     mock_get_pack_details.return_value = pack_response_valid
 
     results = get_all_installed_packs()
