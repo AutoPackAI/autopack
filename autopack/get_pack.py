@@ -6,10 +6,10 @@ from autopack.pack import Pack
 from autopack.utils import fetch_pack_object, load_metadata_file
 
 
-def try_get_pack(pack_id: str, quiet=False, remote=False) -> Union[Pack, None]:
+def try_get_pack(pack_id: str, remote=False) -> Union[type[Pack], None]:
     """
-    Get a pack based on its ID, in `author/repo_name/pack_name` format. Same as `get_pack` but does not raise an
-    Exception. If there is a problem finding or loading a pack it will return None.
+    Get a pack based on its ID. Same as `get_pack` but does not raise an Exception. If there is a problem finding or
+    loading a pack it will return None.
 
     Args:
         pack_id (str): The ID of the pack to fetch.
@@ -21,20 +21,21 @@ def try_get_pack(pack_id: str, quiet=False, remote=False) -> Union[Pack, None]:
     """
 
     try:
-        return get_pack(pack_id, quiet=quiet, remote=remote)
+        return get_pack(pack_id, remote=remote)
     except AutoPackError:
         return None
 
 
-def get_all_installed_packs(quiet=False):
+def get_all_installed_packs():
+    """Returns all of the"""
     metadata = load_metadata_file()
     pack_ids = list(metadata.keys())
-    return try_get_packs(pack_ids, quiet=quiet, remote=False)
+    return try_get_packs(pack_ids, remote=False)
 
 
-def try_get_packs(pack_ids: list[str], quiet=False, remote=False) -> list[Pack]:
+def try_get_packs(pack_ids: list[str], remote=False) -> list[type[Pack]]:
     """
-    Get a list of packs based on their IDs, in `author/repo_name/pack_name` format.
+    Get a list of packs based on their IDs
 
     Args:
         pack_ids (list[str]): The IDs of the packs to fetch.
@@ -46,14 +47,14 @@ def try_get_packs(pack_ids: list[str], quiet=False, remote=False) -> list[Pack]:
     """
     packs = []
     for pack_id in pack_ids:
-        pack = try_get_pack(pack_id, quiet, remote)
+        pack = try_get_pack(pack_id, remote)
         if pack:
             packs.append(pack)
 
     return packs
 
 
-def get_pack(pack_id: str, quiet=False, remote=False) -> Pack:
+def get_pack(pack_id: str, remote=False) -> type[Pack]:
     """
     Get a pack based on its ID, in `author/repo_name/pack_name` format.
 
@@ -76,4 +77,4 @@ def get_pack(pack_id: str, quiet=False, remote=False) -> Pack:
     if not pack_data:
         raise AutoPackNotFoundError()
 
-    return fetch_pack_object(pack_data, quiet=quiet)
+    return fetch_pack_object(pack_data)

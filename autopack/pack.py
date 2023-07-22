@@ -1,96 +1,132 @@
-from typing import Any, Optional, TYPE_CHECKING, TYPE_CHECKING
+from abc import abstractmethod
+from asyncio import iscoroutinefunction
+from typing import ClassVar, Optional, Callable, Coroutine, Any, Union
 
-from langchain.tools import BaseTool
+from pydantic import BaseModel, ValidationError, Field
 
-if TYPE_CHECKING:
-    from autopack.api import PackResponse
+from autopack.utils import run_args_from_args_schema, acall_llm, call_llm
 
 
-class Pack(BaseTool):
-    """
-    Class to describe the Pack that is returned from get_pack calls. Wraps the Tool and provides metadata about the
-    pack.
-    """
+class Pack(BaseModel):
+    arbitrary_types_allowed = True
 
-    pack_id: str
-    author: str
-    repo: str
-    module_path: str
-    description: str
-    name: str
-    dependencies: list[str]
-    source: str
-    run_args: dict[str, Any]
-    init_args: dict[str, Any]
-    tool_class: Any
-    tool: Any = None
+    class Config:
+        arbitrary_types_allowed = True
 
-    def __getattr__(self, name):
-        """Tool classes may implement helper functions of various sorts, just pass those through to the tool"""
-        if hasattr(self.tool, name):
-            method = getattr(self.tool, name)
+    ## Required
 
-            if callable(method):
-                # Wrap the call so that `self` is `self.tool`
-                def wrapped_call(*args, **kwargs):
-                    return method(self.tool, *args, **kwargs)
+    # The name of the tool that will be provided to the LLM
+    name: ClassVar[str]
+    # The description of the tool which is passed to the LLM
+    description: ClassVar[str]
 
-                return wrapped_call
+    ## Optional
 
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{name}'"
-        )
+    # Any pip packages this Pack depends on.
+    dependencies: ClassVar[Optional[list[str]]] = None
+    # A list of Pack IDs needed for this tool to function effectively (e.g. `write_file` depends on `read_file`)
+    depends_on: ClassVar[Optional[list[str]]] = None
+    # Enhances tool selection by grouping this tool with other tools of the same category
+    categories: ClassVar[Optional[list[str]]] = None
+    # If this tool has side effects that cannot be undone (e.g. sending an email)
+    reversible: ClassVar[bool] = True
+    # A Pydantic BaseModel describing the Pack's run arguments
+    args_schema: ClassVar[Optional[type[BaseModel]]] = None
 
-    def init_tool(self, init_args: Optional[dict[str, Any]] = None):
-        init_args = init_args or {}
-        is_valid = validate_tool_args(self.init_args, init_args)
-        # TODO: Error handling on invalid args
-        if is_valid:
-            self.tool = self.tool_class(**init_args)
+    llm: Optional[Callable[[str], str]] = Field(
+        None, description="A callable function to call an LLM (string in string out)"
+    )
+    allm: Union[None, Callable[[str], str], Coroutine[Any, Any, str]] = Field(
+        None, description="An asynchronous callable function to call an LLM (string in string out)"
+    )
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.llm and not callable(self.llm):
+            raise TypeError(f"LLM object {self.llm} must be callable")
+
+        if self.allm and not iscoroutinefunction(self.allm):
+            raise TypeError(f"Async LLM object {self.llm} must be async and callable")
+
+        if self.name is None:
+            raise TypeError(f"Class {self.__class__.__name__} must define 'name' as a class variable")
+        if self.description is None:
+            raise TypeError(f"Class {self.__class__.__name__} must define 'description' as a class variable")
+
+    def run(self, *args, **kwargs) -> str:
+        """Execute the _run function of the subclass, verifying the arguments. (Will eventually do callbacks or some
+        such)
+
+        Args: **kwargs (dict): The arguments to pass to _run. Each key should be the name of an argument,
+        and the value should be the value of the argument.
+
+        Returns: The response from the _run function of the subclass
+        """
+        try:
+            # Validate the arguments
+            self.validate_tool_args(**kwargs)
+        except ValidationError as e:
+            # If a ValidationError is raised, the arguments are invalid
+            error_list = ". ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
+            return f"Error: Invalid arguments. Details: {error_list}"
+
+        return self._run(*args, **kwargs)
+
+    async def arun(self, *args, **kwargs):
+        """Asynchronously execute the _arun function of the subclass, verifying the arguments. (Will eventually do
+        callbacks or some such)
+
+        Args: **kwargs (dict): The arguments to pass to _arun. Each key should be the name of an argument,
+        and the value should be the value of the argument.
+
+        Returns:
+            str: The response from the _arun function of the subclass
+        """
+        try:
+            # Validate the arguments
+            self.validate_tool_args(**kwargs)
+        except ValidationError as e:
+            # If a ValidationError is raised, the arguments are invalid
+            error_list = ". ".join([f"{err['loc'][0]}: {err['msg']}" for err in e.errors()])
+            return f"Error: Invalid arguments. Details: {error_list}"
+
+        return await self._arun(*args, **kwargs)
+
+    @abstractmethod
     def _run(self, *args, **kwargs):
-        is_valid = validate_tool_args(self.run_args, kwargs)
-        # TODO: Error handling on invalid args
-        if is_valid:
-            if hasattr(self.tool, "_run"):
-                return self.tool._run(*args, **kwargs)
-            else:
-                return self.run(*args, **kwargs)
+        pass
 
-    async def _arun(self, *args, **kwargs):
-        if hasattr(self.tool, "_run"):
-            return await self.tool._arun(*args, **kwargs)
-        else:
-            return await self.arun(*args, **kwargs)
+    @abstractmethod
+    def _arun(self, *args, **kwargs):
+        pass
 
     @property
     def args(self) -> dict:
-        return self.run_args
+        """Turn the args schema into a dict that's easier to work with"""
+        if not self.args_schema:
+            return {}
+        return run_args_from_args_schema(self.args_schema)
 
-    @property
-    def is_single_input(self) -> bool:
-        """Hack on top of BaseTool to allow 0-arg tools"""
-        keys = {k for k in self.args if k != "kwargs"}
-        return len(keys) <= 1
+    def call_llm(self, prompt: str) -> str:
+        if self.llm is None:
+            return "No LLM available, cannot proceed"
+        return call_llm(prompt, self.llm)
 
-    @classmethod
-    def from_pack_data(cls, tool_class: BaseTool, pack_data: "PackResponse"):
-        return cls(
-            pack_id=pack_data.pack_id,
-            author=pack_data.author,
-            repo=pack_data.repo,
-            module_path=pack_data.module_path,
-            description=pack_data.description,
-            name=pack_data.name,
-            dependencies=pack_data.dependencies,
-            source=pack_data.source,
-            run_args=pack_data.run_args,
-            init_args=pack_data.init_args,
-            tool_class=tool_class,
-        )
+    async def acall_llm(self, prompt: str) -> str:
+        if self.allm is None:
+            return self.call_llm(prompt)
+        return await acall_llm(prompt, self.allm)
 
+    def validate_tool_args(self, **kwargs):
+        """Validate the arguments against the args_schema model.
 
-def validate_tool_args(spec: dict[str, Any], actual: dict[str, Any]):
-    # TODO: This. Plus maybe some helpful errors?
-    return True
+        Args:
+            kwargs (dict[str, Any]): The arguments to validate.
+        Returns:
+            True if the arguments are valid.
+        Raises:
+            ValidationError If any arguments are invalid.
+        """
+        self.args_schema(**kwargs)
 
+        return True

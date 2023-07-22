@@ -7,9 +7,14 @@ from git import Repo
 
 from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
-from autopack.get_pack import try_get_pack
+from autopack.get_pack import try_get_pack, get_pack
 from autopack.pack import Pack
-from autopack.utils import find_or_create_autopack_dir, load_metadata_file, write_metadata_file
+from autopack.utils import (
+    find_or_create_autopack_dir,
+    load_metadata_file,
+    write_metadata_file,
+    extract_unique_directory_name,
+)
 
 
 def is_dependency_installed(dependency: str) -> bool:
@@ -20,20 +25,22 @@ def is_dependency_installed(dependency: str) -> bool:
         return False
 
 
-def install_dependency(dependency: str):
+def install_dependency(dependency: str, quiet=True):
     try:
         subprocess.check_output(
             ["pip", "install", dependency],
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         )
-        print(f"{dependency} has been successfully installed.")
+        if not quiet:
+            print(f"{dependency} has been successfully installed.")
     except subprocess.CalledProcessError as e:
-        print(f"Installation of {dependency} failed with the following error:")
-        print(e.output)
+        if not quiet:
+            print(f"Installation of {dependency} failed with the following error:")
+            print(e.output)
 
 
-def ask_to_install_dependencies(dependencies: list[str], force=False):
+def ask_to_install_dependencies(dependencies: list[str], force=False, quiet=True):
     for dependency in dependencies:
         if is_dependency_installed(dependency):
             continue
@@ -41,55 +48,50 @@ def ask_to_install_dependencies(dependencies: list[str], force=False):
         if force:
             install_dependency(dependency)
         else:
-            print(f"This pack requires the dependency {dependency} to be installed. Continue?")
+            if not quiet:
+                print(f"This pack requires the dependency {dependency} to be installed. Continue?")
             agree = input("[Yn]")
             if agree.lower() == "y" or agree == "":
-                install_dependency(dependency)
-            else:
+                install_dependency(dependency, quiet=quiet)
+            elif not quiet:
                 print(f"Skipping install of {dependency}")
 
 
-def install_from_git(pack_data: PackResponse) -> str:
+def install_from_git(pack_data: PackResponse, quiet=True) -> str:
     autopack_dir = find_or_create_autopack_dir()
 
-    url = pack_data.repo_url()
-    pack_path = os.path.join(autopack_dir, pack_data.pack_path())
+    url = pack_data.repo_url
+    pack_path = os.path.join(autopack_dir, *extract_unique_directory_name(pack_data.repo_url).split("/"))
 
     if os.path.exists(pack_path):
-        print("Repo already exists, pulling updates")
+        if not quiet:
+            print("Repo already exists, pulling updates")
         Repo(pack_path).remotes.origin.pull()
     else:
-        print(f"Cloning repo into {pack_path}")
+        if not quiet:
+            print(f"Cloning repo into {pack_path}")
         Repo.clone_from(url, pack_path)
 
     return pack_path
 
 
-def update_metadata_file(pack: PackResponse):
+def update_metadata_file(pack_id: str, pack_response: PackResponse):
     metadata = load_metadata_file()
-    metadata[pack.pack_id] = {
-        "pack_id": pack.pack_id,
-        "author": pack.author,
-        "repo": pack.repo,
-        "module_path": pack.module_path,
-        "description": pack.description,
-        "name": pack.name,
-        "dependencies": pack.dependencies,
-        "source": pack.source,
-        "run_args": pack.run_args,
-        "init_args": pack.init_args,
-    }
+    metadata[pack_id] = pack_response.__dict__
 
     write_metadata_file(metadata)
 
 
-def install_pack(pack_id: str, force_dependencies=False) -> Pack:
-    print(f"Installing pack: {pack_id}")
+def install_pack(pack_id: str, force_dependencies=False, quiet=True) -> type[Pack]:
+    if not quiet:
+        print(f"Installing pack: {pack_id}")
+
     find_or_create_autopack_dir()
 
-    pack = try_get_pack(pack_id, quiet=False)
+    pack = try_get_pack(pack_id)
     if pack:
-        print(f"Pack {pack_id} already installed.")
+        if not quiet:
+            print(f"Pack {pack_id} already installed.")
         return pack
 
     try:
@@ -97,28 +99,26 @@ def install_pack(pack_id: str, force_dependencies=False) -> Pack:
 
         if not pack_data:
             raise AutoPackInstallationError("Could not find pack details")
-
-        ask_to_install_dependencies(pack_data.dependencies, force_dependencies)
     except AutoPackError as e:
         # Maybe do something else
         raise AutoPackInstallationError(f"Could not install pack {e}")
     except BaseException as e:
         raise AutoPackInstallationError(f"Could not install pack {e}")
 
-    git_dir = ""
     try:
-        if pack_data.source == "git":
-            git_dir = install_from_git(pack_data)
+        git_dir = install_from_git(pack_data, quiet=quiet)
 
-        update_metadata_file(pack_data)
-        pack = try_get_pack(pack_id, quiet=False)
+        update_metadata_file(pack_id, pack_data)
+        pack = get_pack(pack_id)
 
         if pack:
+            if pack.dependencies:
+                ask_to_install_dependencies(pack.dependencies, force=force_dependencies, quiet=quiet)
             return pack
-
     except Exception as e:
         raise AutoPackInstallationError(f"Couldn't install pack due to error {e}")
 
+    # Clean up bad repo directories to make sure there aren't bad packs in the .autopack dir
     if git_dir and os.path.isdir(git_dir):
         shutil.rmtree(git_dir)
 

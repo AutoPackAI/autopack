@@ -9,9 +9,7 @@ def parse_args():
 
     subparsers = parser.add_subparsers(dest="command")
     install_parser = subparsers.add_parser("install", help="Install a pack")
-    install_parser.add_argument(
-        "pack", help="ID (author/repo/pack_name) of the pack to install"
-    )
+    install_parser.add_argument("pack", help="ID of the pack to install")
 
     search_parser = subparsers.add_parser("search", help="Search for packs")
     search_parser.add_argument("query", help="The search query")
@@ -30,7 +28,7 @@ def main():
     args = parse_args()
 
     if args.command == "install":
-        result = install_pack(args.pack, args.force)
+        result = install_pack(args.pack, args.force, quiet=False)
         if result:
             print("Installation completed")
         else:

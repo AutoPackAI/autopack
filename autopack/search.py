@@ -10,5 +10,4 @@ def print_search(query: str):
         print(f"Pack ID:      {pack.pack_id}")
         print(f"Dependencies: {', '.join(pack.dependencies)}")
         print(f"Description:  {pack.name}")
-        print(f"Init Args:    {json.dumps(pack.init_args)}")
         print(f"Run Args:     {json.dumps(pack.run_args)}")

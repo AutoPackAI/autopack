@@ -1,15 +1,20 @@
-from langchain.tools import BaseTool
+from pydantic import BaseModel, Field
+
+from autopack import Pack
 
 
-class NoopPack(BaseTool):
-    name: str = "noop_pack"
+class NoopArgs(BaseModel):
+    query: str = Field(..., description="The thing to do nothing about")
 
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        super().__init__()
+
+class NoopPack(Pack):
+    name = "noop_pack"
+    description = "Does nothing"
+    categories: list[str] = ["Nothingness"]
+    args_schema = NoopArgs
 
     def _run(self, query: str):
         return f"noop: {query}"
 
-    async def _arun(self, *args, **kwargs):
-        return self.run(*args, **kwargs)
+    async def _arun(self, query: str):
+        return self.run(query=query)
