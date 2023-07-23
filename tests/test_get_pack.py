@@ -12,6 +12,7 @@ from tests.data.packs.noop import NoopPack
 @pytest.fixture
 def pack_response_valid():
     return PackResponse(
+        pack_id="autopack/tests/noop",
         repo_url="git@github.com:AutoPackAI/autopack.git",
         package_path="tests.data.packs.noop",
         class_name="NoopPack",

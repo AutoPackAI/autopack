@@ -10,6 +10,7 @@ from autopack.installation import install_pack
 @pytest.fixture
 def valid_pack_data():
     return {
+        "pack_id": "autopack/tests/noop",
         "repo_url": "git@github.com:AutoPackAI/autopack.git",
         "package_path": "tests.data.packs.noop",
         "class_name": "NoopPack",
