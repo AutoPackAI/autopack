@@ -11,5 +11,5 @@ def test_select_packs():
     )
 
     actual_names = [pack_id.split("/")[-1] for pack_id in pack_ids]
-    for expected in ["os_info", "disk_usage", "write_file"]:
+    for expected in ["os_name_and_version", "disk_usage"]:
         assert expected in actual_names

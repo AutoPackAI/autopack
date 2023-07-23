@@ -53,9 +53,7 @@ def get_pack_details_remotely(pack_id: str) -> PackResponse:
         data = response.json()
 
         try:
-            return PackResponse(
-                package_path=data.get("package_path"), class_name=data.get("class_name"), repo_url=data.get("repo_url")
-            )
+            return PackResponse(**data)
         except (ValidationError, TypeError) as e:
             message = f"Pack fetch received invalid data: {e}"
             raise AutoPackFetchError(message)

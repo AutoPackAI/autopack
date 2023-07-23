@@ -3,6 +3,7 @@ import shutil
 import sys
 
 import pytest
+from dotenv import load_dotenv
 
 
 # each test runs on cwd to its temp dir
@@ -15,6 +16,11 @@ def go_to_tmpdir(request):
     # Chdir only for the duration of the test.
     with tmpdir.as_cwd():
         yield
+
+
+@pytest.fixture(autouse=True)
+def load_env():
+    load_dotenv()
 
 
 @pytest.fixture(autouse=True)

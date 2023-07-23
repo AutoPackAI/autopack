@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autopack-tools"
-version = "0.3.0"
+version = "0.3.1"
 repository = "https://github.com/AutoPackAI/autopack"
 homepage = "https://autopack.ai"
 description = "Package Manager for AI Agent tools"
@@ -35,6 +35,7 @@ types-psycopg2 = "^2.9.21.10"
 pipreqs = "^0.4.13"
 gitpython = "^3.1.31"
 pytest-asyncio = "^0.21.1"
+openai = "^0.27.8"
 
 [build-system]
 requires = ["poetry-core"]

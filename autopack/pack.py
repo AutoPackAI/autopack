@@ -76,7 +76,8 @@ class Pack(BaseModel):
         """Asynchronously execute the _arun function of the subclass, verifying the arguments. (Will eventually do
         callbacks or some such)
 
-        Args: **kwargs (dict): The arguments to pass to _arun. Each key should be the name of an argument,
+        Args:
+            **kwargs (dict): The arguments to pass to _arun. Each key should be the name of an argument,
         and the value should be the value of the argument.
 
         Returns:
