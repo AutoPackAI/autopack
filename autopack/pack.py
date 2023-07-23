@@ -131,3 +131,8 @@ class Pack(BaseModel):
         self.args_schema(**kwargs)
 
         return True
+
+    def init_langchain_tool(self):
+        from autopack.langchain_wrapper import LangchainWrapper
+
+        return LangchainWrapper(pack=self)
