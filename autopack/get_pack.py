@@ -56,11 +56,10 @@ def try_get_packs(pack_ids: list[str], remote=False) -> list[type[Pack]]:
 
 def get_pack(pack_id: str, remote=False) -> type[Pack]:
     """
-    Get a pack based on its ID, in `author/repo_name/pack_name` format.
+    Get a pack based on its ID.
 
     Args:
         pack_id (str): The ID of the pack to fetch.
-        quiet (bool, Optional): If True, won't print any output
         remote (bool, Optional): If True, will make network requests to fetch pack metadata
 
     Returns:
