@@ -14,7 +14,10 @@ class WorkspaceFileManager(FileManager):
 
     def __init__(self, config: PackConfig = PackConfig.global_config()):
         super().__init__(config)
-        self.workspace_dir = Path(config.workspace_path)
+
+    @property
+    def workspace_dir(self) -> Path:
+        return Path(self.config.workspace_path)
 
     def read_file(self, file_path: str) -> str:
         """Reads a file from the workspace directory on the local file system.
