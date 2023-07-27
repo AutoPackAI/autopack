@@ -2,9 +2,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from autopack.api import API_URL, get_pack_details
+from autopack.api import get_pack_details
 from autopack.errors import AutoPackFetchError
 from autopack.installation import install_pack
+from autopack.pack_config import PackConfig
 from tests.data.packs.noop import NoopPack
 
 
@@ -31,7 +32,8 @@ def test_fetch_remote_pack_data_success(mock_requests_get, valid_pack_data):
 
     response = get_pack_details("pack_id", remote=True)
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    api_url = PackConfig.global_config().api_url
+    mock_requests_get.assert_called_once_with(f"{api_url}api/details", params={"id": "pack_id"})
 
     assert response.repo_url == valid_pack_data["repo_url"]
     assert response.package_path == valid_pack_data["package_path"]
@@ -49,7 +51,8 @@ def test_fetch_remote_pack_data_invalid_response(mock_requests_get, valid_pack_d
     with pytest.raises(AutoPackFetchError):
         get_pack_details("pack_id", remote=True)
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    api_url = PackConfig.global_config().api_url
+    mock_requests_get.assert_called_once_with(f"{api_url}api/details", params={"id": "pack_id"})
 
 
 def test_fetch_remote_pack_data_error_response(mock_requests_get, valid_pack_data):
@@ -60,7 +63,8 @@ def test_fetch_remote_pack_data_error_response(mock_requests_get, valid_pack_dat
     with pytest.raises(AutoPackFetchError):
         get_pack_details("pack_id", remote=True)
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    api_url = PackConfig.global_config().api_url
+    mock_requests_get.assert_called_once_with(f"{api_url}api/details", params={"id": "pack_id"})
 
 
 def test_fetch_remote_pack_data_not_found_response(mock_requests_get, valid_pack_data):
@@ -71,7 +75,8 @@ def test_fetch_remote_pack_data_not_found_response(mock_requests_get, valid_pack
     with pytest.raises(AutoPackFetchError):
         get_pack_details("pack_id", remote=True)
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": "pack_id"})
+    api_url = PackConfig.global_config().api_url
+    mock_requests_get.assert_called_once_with(f"{api_url}api/details", params={"id": "pack_id"})
 
 
 def test_fetch_local_not_found(valid_pack_data):
@@ -90,7 +95,8 @@ def test_fetch_local_exists(mock_requests_get, valid_pack_data):
 
     install_pack(pack_id)
 
-    mock_requests_get.assert_called_once_with(f"{API_URL}api/details", params={"id": pack_id})
+    api_url = PackConfig.global_config().api_url
+    mock_requests_get.assert_called_once_with(f"{api_url}api/details", params={"id": pack_id})
 
     response = get_pack_details(pack_id)
 

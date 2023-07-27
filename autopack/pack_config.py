@@ -44,6 +44,9 @@ class PackConfig(BaseSettings):
     restrict_code_execution: bool = Field(
         description="If True will signal to Packs that they should not execute code", default=False
     )
+    api_url: str = Field(
+        description="Scheme, hostname, and port of the AutoPack API you wish to use.", default="https://autopack.ai/"
+    )
     # Not implemented yet
     local_packs: list[type["Pack"]] = Field(
         description="A list of local Pack classes that you wish to be included in the selection process",
