@@ -6,7 +6,8 @@ import sys
 from asyncio import iscoroutinefunction
 from json import JSONDecodeError
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Union, Coroutine
+from typing import Callable
+from typing import TYPE_CHECKING, Any, Union, Coroutine
 
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import SystemMessage, BaseMessage

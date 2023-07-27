@@ -8,7 +8,6 @@ from marshmallow import ValidationError
 
 from autopack.errors import AutoPackFetchError
 from autopack.pack_response import PackResponse
-from autopack.pack_search_response import PackSearchResponse
 from autopack.utils import find_or_create_autopack_dir
 
 API_URL = os.environ.get("AUTOPACK_API_URL", "https://autopack.ai/")
@@ -64,7 +63,7 @@ def get_pack_details_remotely(pack_id: str) -> PackResponse:
         raise AutoPackFetchError(f"Error: {response.status_code}")
 
 
-def pack_search(query: str) -> list[PackSearchResponse]:
+def pack_search(query: str) -> list[PackResponse]:
     endpoint = "/api/search"
     url = urljoin(API_URL, endpoint)
     params = {"query": query}
@@ -74,7 +73,7 @@ def pack_search(query: str) -> list[PackSearchResponse]:
         data = response.json()
 
         try:
-            return [PackSearchResponse(**datum) for datum in data["packs"]]
+            return [PackResponse(**datum) for datum in data["packs"]]
         except (ValidationError, TypeError) as e:
             message = f"Pack fetch received invalid data: {e}"
             print(message)

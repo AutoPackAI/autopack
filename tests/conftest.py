@@ -18,7 +18,7 @@ def go_to_tmpdir(request):
         yield
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def load_env():
     load_dotenv()
 

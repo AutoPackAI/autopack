@@ -10,7 +10,7 @@ class NoopArgs(BaseModel):
 class NoopPack(Pack):
     name = "noop_pack"
     description = "Does nothing"
-    categories: list[str] = ["Nothingness"]
+    categories = ["Nothingness"]
     args_schema = NoopArgs
 
     def _run(self, query: str):

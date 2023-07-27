@@ -4,12 +4,11 @@ from typing import ClassVar, Optional, Callable, Coroutine, Any, Union
 
 from pydantic import BaseModel, ValidationError, Field
 
+from autopack.pack_config import PackConfig
 from autopack.utils import run_args_from_args_schema, acall_llm, call_llm
 
 
 class Pack(BaseModel):
-    arbitrary_types_allowed = True
-
     class Config:
         arbitrary_types_allowed = True
 
@@ -39,6 +38,7 @@ class Pack(BaseModel):
     allm: Union[None, Callable[[str], str], Coroutine[Any, Any, str]] = Field(
         None, description="An asynchronous callable function to call an LLM (string in string out)"
     )
+    config: PackConfig = Field(default=PackConfig.global_config)
 
     def __init__(self, **data):
         super().__init__(**data)

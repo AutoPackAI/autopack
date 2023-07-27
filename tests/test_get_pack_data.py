@@ -5,6 +5,7 @@ import pytest
 from autopack.api import API_URL, get_pack_details
 from autopack.errors import AutoPackFetchError
 from autopack.installation import install_pack
+from tests.data.packs.noop import NoopPack
 
 
 @pytest.fixture
@@ -14,6 +15,11 @@ def valid_pack_data():
         "repo_url": "git@github.com:AutoPackAI/autopack.git",
         "package_path": "tests.data.packs.noop",
         "class_name": "NoopPack",
+        "name": NoopPack.name,
+        "description": NoopPack.description,
+        "categories": NoopPack.categories,
+        "run_args": [{"name": "query", "type": "string"}],
+        "dependencies": [],
     }
 
 

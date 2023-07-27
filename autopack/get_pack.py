@@ -1,9 +1,13 @@
+import json
+import os
+from datetime import timedelta, datetime
 from typing import Union
 
-from autopack.api import get_pack_details
+from autopack.api import get_pack_details, pack_search
 from autopack.errors import AutoPackError, AutoPackNotFoundError
 from autopack.pack import Pack
-from autopack.utils import fetch_pack_object, load_metadata_file
+from autopack.pack_response import PackResponse
+from autopack.utils import fetch_pack_object, load_metadata_file, find_or_create_autopack_dir
 
 
 def try_get_pack(pack_id: str, remote=False) -> Union[type[Pack], None]:
@@ -26,8 +30,22 @@ def try_get_pack(pack_id: str, remote=False) -> Union[type[Pack], None]:
         return None
 
 
+def get_all_pack_info():
+    cache_file = os.path.join(find_or_create_autopack_dir(), f"pack_info_cache.json")
+    if os.path.exists(cache_file) and datetime.now() - datetime.fromtimestamp(os.path.getmtime(cache_file)) < timedelta(
+        hours=1
+    ):
+        with open(cache_file, "r") as f:
+            results = json.load(f)
+            return [PackResponse(**result) for result in results]
+    results = pack_search("")
+    with open(cache_file, "w") as f:
+        json.dump([result.__dict__ for result in results], f)
+    return results
+
+
 def get_all_installed_packs():
-    """Returns all of the"""
+    """Returns all of the packs that are currently installed"""
     metadata = load_metadata_file()
     pack_ids = list(metadata.keys())
     return try_get_packs(pack_ids, remote=False)

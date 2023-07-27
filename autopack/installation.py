@@ -9,6 +9,7 @@ from autopack.api import PackResponse, get_pack_details
 from autopack.errors import AutoPackError, AutoPackInstallationError
 from autopack.get_pack import try_get_pack, get_pack
 from autopack.pack import Pack
+from autopack.pack_config import PackConfig
 from autopack.utils import (
     find_or_create_autopack_dir,
     load_metadata_file,
@@ -82,7 +83,7 @@ def update_metadata_file(pack_id: str, pack_response: PackResponse):
     write_metadata_file(metadata)
 
 
-def install_pack(pack_id: str, force_dependencies=False, quiet=True) -> type[Pack]:
+def install_pack(pack_id: str, quiet=True, config: PackConfig = PackConfig.global_config()) -> type[Pack]:
     if not quiet:
         print(f"Installing pack: {pack_id}")
 
@@ -113,7 +114,9 @@ def install_pack(pack_id: str, force_dependencies=False, quiet=True) -> type[Pac
 
         if pack:
             if pack.dependencies:
-                ask_to_install_dependencies(pack.dependencies, force=force_dependencies, quiet=quiet)
+                ask_to_install_dependencies(
+                    pack.dependencies, force=config.automatically_install_dependencies, quiet=quiet
+                )
             return pack
     except Exception as e:
         raise AutoPackInstallationError(f"Couldn't install pack due to error {e}")

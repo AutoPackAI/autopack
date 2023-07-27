@@ -16,6 +16,11 @@ def pack_response_valid():
         repo_url="git@github.com:AutoPackAI/autopack.git",
         package_path="tests.data.packs.noop",
         class_name="NoopPack",
+        name=NoopPack.name,
+        dependencies=[],
+        description=NoopPack.description,
+        categories=NoopPack.categories,
+        run_args=[{"name": "query", "type": "string"}],
     )
 
 
