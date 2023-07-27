@@ -4,6 +4,7 @@ from typing import ClassVar, Optional, Callable, Coroutine, Any, Union
 
 from pydantic import BaseModel, ValidationError, Field
 
+from autopack.filesystem_emulation.file_manager import FileManager
 from autopack.pack_config import PackConfig
 from autopack.utils import run_args_from_args_schema, acall_llm, call_llm
 
@@ -38,10 +39,13 @@ class Pack(BaseModel):
     allm: Union[None, Callable[[str], str], Coroutine[Any, Any, str]] = Field(
         None, description="An asynchronous callable function to call an LLM (string in string out)"
     )
-    config: PackConfig = Field(default=PackConfig.global_config)
+    config: PackConfig = Field(default_factory=PackConfig.global_config)
 
     def __init__(self, **data):
         super().__init__(**data)
+        if not self.config.filesystem_manager:
+            self.config.init_filesystem_manager()
+
         if self.llm and not callable(self.llm):
             raise TypeError(f"LLM object {self.llm} must be callable")
 
@@ -117,6 +121,10 @@ class Pack(BaseModel):
         if self.allm is None:
             return self.call_llm(prompt)
         return await acall_llm(prompt, self.allm)
+
+    @property
+    def filesystem_manager(self) -> FileManager:
+        return self.config.filesystem_manager
 
     def validate_tool_args(self, **kwargs):
         """Validate the arguments against the args_schema model.

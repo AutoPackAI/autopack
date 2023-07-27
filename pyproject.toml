@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autopack-tools"
-version = "0.4.0"
+version = "0.4.1"
 repository = "https://github.com/AutoPackAI/autopack"
 homepage = "https://autopack.ai"
 description = "Package Manager for AI Agent tools"

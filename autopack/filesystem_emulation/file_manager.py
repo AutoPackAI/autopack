@@ -23,6 +23,10 @@ class FileManager(ABC):
         pass
 
     @abstractmethod
+    async def awrite_file(self, file_path: str, content: str) -> str:
+        pass
+
+    @abstractmethod
     def delete_file(self, file_path: str) -> str:
         pass
 
