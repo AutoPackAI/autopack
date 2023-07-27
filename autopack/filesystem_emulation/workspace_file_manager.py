@@ -45,7 +45,7 @@ class WorkspaceFileManager(FileManager):
         absolute_path = self.workspace_dir / file_path
         absolute_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(absolute_path, "w") as file:
+        with open(absolute_path, "w+") as file:
             file.write(content)
 
         return f"Successfully wrote {len(content.encode('utf-8'))} bytes to {file_path}"
@@ -63,7 +63,7 @@ class WorkspaceFileManager(FileManager):
         absolute_path = self.workspace_dir / file_path
         absolute_path.parent.mkdir(parents=True, exist_ok=True)
 
-        async with aiofiles.open(absolute_path, "w") as file:
+        async with aiofiles.open(absolute_path, "w+") as file:
             await file.write(content)
 
         return f"Successfully wrote {len(content.encode('utf-8'))} bytes to {file_path}"
