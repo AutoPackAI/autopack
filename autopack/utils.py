@@ -142,7 +142,7 @@ def run_args_from_args_schema(args_schema: type[BaseModel]) -> dict[str, dict[st
     return run_args
 
 
-def functions_bulleted_list(packs: list[type["Pack"]]) -> str:
+def functions_bulleted_list(packs: list[Union[PackResponse, type["Pack"]]]) -> str:
     functions_string = []
     grouped_packs: dict[str, list[type[Pack]]] = {}
     for pack in packs:
@@ -158,12 +158,16 @@ def functions_bulleted_list(packs: list[type["Pack"]]) -> str:
         functions_string.append(f"\n## {category}")
         sorted_by_name = sorted(category_packs, key=lambda p: p.name)
         for pack in sorted_by_name:
-            args: list[dict[str, str]] = []
-            if pack.args_schema:
-                args = list(run_args_from_args_schema(pack.args_schema).values())
-            args_signature = ", ".join([f"{arg.get('name')}: {arg.get('type')}" for arg in args])
+            if hasattr(pack, "run_args"):
+                args = pack.run_args
+            elif hasattr(pack, "args_schema") and pack.args_schema:
+                args = run_args_from_args_schema(pack.args_schema)
+            else:
+                args = {}
+
+            args_signature = ", ".join([f"{name}: {arg.get('type')}" for name, arg in args.items()])
             args_descriptions = (
-                "; ".join([f"{arg.get('name')} ({arg.get('type')}): {arg.get('description')}" for arg in args])
+                "; ".join([f"{name} ({arg.get('type')}): {arg.get('description')}" for name, arg in args.items()])
                 or "None."
             )
             functions_string.append(
