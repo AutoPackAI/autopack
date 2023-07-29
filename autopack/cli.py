@@ -28,7 +28,7 @@ def main():
     args = parse_args()
 
     if args.command == "install":
-        result = install_pack(args.pack, args.force, quiet=False)
+        result = install_pack(args.pack, args.force)
         if result:
             print("Installation completed")
         else:
