@@ -26,6 +26,9 @@ class RAMFileManager(FileManager):
         else:
             return "Error: File not found"
 
+    async def aread_file(self, file_path: str) -> str:
+        return self.read_file(file_path)
+
     def write_file(self, file_path: str, content: str) -> str:
         """Writes to a file in the virtual file system in RAM.
 
@@ -57,6 +60,9 @@ class RAMFileManager(FileManager):
         else:
             return f"Error: File not found '{file_path}'"
 
+    async def adelete_file(self, file_path: str) -> str:
+        return self.delete_file(file_path)
+
     def list_files(self, dir_path: str) -> str:
         """Lists all files in the specified directory in the virtual file system in RAM.
 
@@ -77,3 +83,6 @@ class RAMFileManager(FileManager):
             return "\n".join(files_in_dir)
         else:
             return f"Error: No such directory {dir_path}."
+
+    def alist_files(self, dir_path: str) -> str:
+        return self.list_files(dir_path)

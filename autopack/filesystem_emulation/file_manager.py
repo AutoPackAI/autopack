@@ -19,6 +19,10 @@ class FileManager(ABC):
         pass
 
     @abstractmethod
+    def aread_file(self, file_path: str) -> str:
+        pass
+
+    @abstractmethod
     def write_file(self, file_path: str, content: str) -> str:
         pass
 
@@ -31,5 +35,13 @@ class FileManager(ABC):
         pass
 
     @abstractmethod
+    def adelete_file(self, file_path: str) -> str:
+        pass
+
+    @abstractmethod
     def list_files(self, dir_path: str) -> str:
+        pass
+
+    @abstractmethod
+    def alist_files(self, dir_path: str) -> str:
         pass
